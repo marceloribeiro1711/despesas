@@ -1377,7 +1377,7 @@
     allExpensesAttached = true;
     var ref = collection(db, "households/" + HOUSEHOLD_ID + "/expenses");
     // Também ordenado pela data de inclusão (criado_em), não pela data da despesa.
-    var q = query(ref, orderBy("criado_em", "desc"), limit(20000));
+    var q = query(ref, orderBy("criado_em", "desc"), limit(10000));
     onSnapshot(q, function(snapshot){
       allExpensesCache = [];
       snapshot.forEach(function(d){ allExpensesCache.push({ id: d.id, data: d.data() }); });
@@ -1602,7 +1602,7 @@
 </script>
 <script>
   // Sincronizar com CACHE_VERSION em service-worker.js a cada nova versão.
-  var APP_VERSION = "1.0.1";
+  var APP_VERSION = "1.0.2";
   document.title = 'Despesas de Casa · v' + APP_VERSION;
   document.getElementById('versionTag').textContent = 'v' + APP_VERSION;
 
