@@ -1232,12 +1232,12 @@
   // (Console Firebase > Configurações do projeto > Seus apps > SDK config)
   // ============================================================
   var firebaseConfig = {
-    apiKey: "SUA_API_KEY",
-    authDomain: "SEU_PROJETO.firebaseapp.com",
-    projectId: "SEU_PROJETO",
-    storageBucket: "SEU_PROJETO.appspot.com",
-    messagingSenderId: "SEU_SENDER_ID",
-    appId: "SEU_APP_ID"
+    apiKey: "AIzaSyAjaTQZjazWZxokwVVCE1icYTRPBcLngLA",
+    authDomain: "despesas-60e1c.firebaseapp.com",
+    projectId: "despesas-60e1c",
+    storageBucket: "despesas-60e1c.firebasestorage.app",
+    messagingSenderId: "566056264170",
+    appId: "1:566056264170:web:e113c6ed3eddfb56159293"
   };
 
   // Identificador único da família — todos os lançamentos ficam sob este caminho.
@@ -1603,6 +1603,7 @@
 <script>
   // Sincronizar com CACHE_VERSION em service-worker.js a cada nova versão.
   var APP_VERSION = "1.0.1";
+  document.title = 'Despesas de Casa · v' + APP_VERSION;
   document.getElementById('versionTag').textContent = 'v' + APP_VERSION;
 
   if ('serviceWorker' in navigator) {
