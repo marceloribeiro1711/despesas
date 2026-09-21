@@ -18,14 +18,14 @@
     --surface: #FFFFFF;
     --surface-2: #F7F5EF;
     --ink: #2B2A26;
-    --ink-soft: #6B6A62;
+    --ink-soft: #2B2A26;
     --border: rgba(43,42,38,0.12);
     --border-strong: rgba(43,42,38,0.22);
 
     --luciana: #009739;
     --luciana-bg: #E1F4E8;
-    --marcelo: #2647D6;
-    --marcelo-bg: #E4E8FB;
+    --marcelo: #007FFF;
+    --marcelo-bg: #DCEEFF;
 
     --accent: #1F5C4A;
     --accent-bg: #E1EFE9;
@@ -44,14 +44,14 @@
       --surface: #26251F;
       --surface-2: #2E2D26;
       --ink: #F1EFE8;
-      --ink-soft: #A8A79E;
+      --ink-soft: #F1EFE8;
       --border: rgba(255,255,255,0.10);
       --border-strong: rgba(255,255,255,0.18);
 
       --luciana: #3DD672;
       --luciana-bg: #143823;
-      --marcelo: #7C93F5;
-      --marcelo-bg: #1D2447;
+      --marcelo: #007FFF;
+      --marcelo-bg: #0F2E45;
 
       --accent: #5FAE8F;
       --accent-bg: #1E3129;
@@ -66,13 +66,13 @@
     --surface: #26251F;
     --surface-2: #2E2D26;
     --ink: #F1EFE8;
-    --ink-soft: #A8A79E;
+    --ink-soft: #F1EFE8;
     --border: rgba(255,255,255,0.10);
     --border-strong: rgba(255,255,255,0.18);
     --luciana: #3DD672;
     --luciana-bg: #143823;
-    --marcelo: #7C93F5;
-    --marcelo-bg: #1D2447;
+    --marcelo: #007FFF;
+    --marcelo-bg: #0F2E45;
     --accent: #5FAE8F;
     --accent-bg: #1E3129;
     --key-bg: #100F0D;
@@ -200,10 +200,10 @@
     color: var(--accent);
   }
   .cat-btn.active svg{ color: var(--accent); }
-  .app.payer-luciana .cat-btn.active{ background: var(--luciana-bg); border-color: var(--luciana); color: var(--luciana); }
-  .app.payer-luciana .cat-btn.active svg{ color: var(--luciana); }
-  .app.payer-marcelo .cat-btn.active{ background: var(--marcelo-bg); border-color: var(--marcelo); color: var(--marcelo); }
-  .app.payer-marcelo .cat-btn.active svg{ color: var(--marcelo); }
+  .app.payer-luciana .cat-btn.active{ background: var(--luciana); border-color: var(--luciana); color: #fff; }
+  .app.payer-luciana .cat-btn.active svg{ color: #fff; }
+  .app.payer-marcelo .cat-btn.active{ background: var(--marcelo); border-color: var(--marcelo); color: #fff; }
+  .app.payer-marcelo .cat-btn.active svg{ color: #fff; }
 
   .desc-input{
     width: 100%;
@@ -244,10 +244,10 @@
     border-color: var(--accent);
   }
   .date-btn.active .dow, .date-btn.active .dnum{ color: var(--accent); }
-  .app.payer-luciana .date-btn.active{ background: var(--luciana-bg); border-color: var(--luciana); }
-  .app.payer-luciana .date-btn.active .dow, .app.payer-luciana .date-btn.active .dnum{ color: var(--luciana); }
-  .app.payer-marcelo .date-btn.active{ background: var(--marcelo-bg); border-color: var(--marcelo); }
-  .app.payer-marcelo .date-btn.active .dow, .app.payer-marcelo .date-btn.active .dnum{ color: var(--marcelo); }
+  .app.payer-luciana .date-btn.active{ background: var(--luciana); border-color: var(--luciana); }
+  .app.payer-luciana .date-btn.active .dow, .app.payer-luciana .date-btn.active .dnum{ color: #fff; }
+  .app.payer-marcelo .date-btn.active{ background: var(--marcelo); border-color: var(--marcelo); }
+  .app.payer-marcelo .date-btn.active .dow, .app.payer-marcelo .date-btn.active .dnum{ color: #fff; }
   .date-btn.calendar{
     display: flex;
     align-items: center;
@@ -506,12 +506,23 @@
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    gap: 4px;
+    gap: 10px;
     width: 100%;
   }
+  .bar-col{ position: relative; height: 100%; display: flex; align-items: flex-end; }
   .bar{ width: 16px; border-radius: 4px 4px 0 0; min-height: 2px; }
   .bar.luciana{ background: var(--luciana); }
   .bar.marcelo{ background: var(--marcelo); }
+  .bar-val{
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -100%);
+    margin-top: -3px;
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--ink);
+    white-space: nowrap;
+  }
   .bar-month-label{ font-size: 10px; color: var(--ink-soft); margin-top: 6px; flex: none; }
   .chart-legend{
     flex: none;
@@ -596,7 +607,7 @@
   .alt-table{ padding: 4px 0; }
   .alt-row{
     display: grid;
-    grid-template-columns: 28px 1fr 4px auto;
+    grid-template-columns: 4px 28px 1fr auto;
     align-items: center;
     gap: 8px;
     padding: 10px 4px;
@@ -613,6 +624,23 @@
   .alt-val{ font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
   .alt-empty{ font-size: 12.5px; color: var(--ink-soft); padding: 16px 4px; text-align: center; }
 
+  .rec-item{
+    display: grid;
+    grid-template-columns: 4px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  .rec-item .who{ width: 4px; align-self: stretch; border-radius: 2px; }
+  .rec-item .who.LUCIANA{ background: var(--luciana); }
+  .rec-item .who.MARCELO{ background: var(--marcelo); }
+  .rec-item .cat{ font-size: 13.5px; font-weight: 600; }
+  .rec-item .desc{ font-size: 11.5px; color: var(--ink-soft); }
+  .rec-item .periodo{ font-size: 11px; color: var(--ink-soft); margin-top: 2px; }
+  .rec-item .val{ font-size: 13.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .rec-empty{ font-size: 12.5px; color: var(--ink-soft); padding: 20px 4px; text-align: center; }
+
   .save-btn.danger{
     background: transparent;
     border: 1.5px solid rgba(220,90,80,0.5);
@@ -621,12 +649,38 @@
     width: 110px;
   }
   .save-btn.danger:active{ background: rgba(220,90,80,0.12); }
-  .edit-footer{ display: flex; align-items: center; gap: 10px; }
+  .edit-footer{ display: flex; align-items: center; gap: 10px; padding-bottom: 10px; }
   .edit-footer .save-btn:not(.danger){ flex: 1; }
+  .close-row{
+    flex: none;
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 20px calc(10px + env(safe-area-inset-bottom));
+  }
 
   .import-pick{ display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
   .import-filename{ font-size: 12px; color: var(--ink-soft); text-align: center; }
   .import-future{ font-size: 12px; color: var(--ink-soft); text-align: center; padding: 20px 0; }
+  .maint-menu{ margin-bottom: 16px; border-radius: 14px; overflow: hidden; border: 1px solid var(--border); }
+  .maint-item{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: none;
+    border-bottom: 1px solid var(--border);
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+  }
+  .maint-item:last-child{ border-bottom: none; }
+  .maint-item.active{ background: var(--surface-2); }
+  .maint-chevron{ color: var(--ink-soft); font-size: 16px; transition: transform 0.15s ease; }
+  .maint-item.active .maint-chevron{ transform: rotate(90deg); }
   .import-block{
     background: var(--surface);
     border: 1px solid var(--border);
@@ -698,7 +752,7 @@
     </div>
   </div>
 
-  <div class="footer-bar">
+  <div class="footer-bar main-footer">
     <button class="save-btn" id="saveBtn" disabled>Salvar despesa</button>
   </div>
 </div>
@@ -757,7 +811,8 @@
       <span id="monthLabel">—</span>
       <button class="icon-btn" id="nextMonthBtn" aria-label="Mês seguinte">›</button>
     </div>
-    <div class="filter-strip" id="filterStrip"></div>
+    <div class="filter-strip" id="filterStripPagador"></div>
+    <div class="filter-strip" id="filterStripCategoria"></div>
     <div class="screen-body scrollable">
       <div class="alt-table" id="altTableBody"></div>
     </div>
@@ -787,6 +842,8 @@
     <div class="footer-bar edit-footer">
       <button class="save-btn danger" id="deleteBtn">Excluir</button>
       <button class="save-btn" id="saveEditBtn">Salvar alterações</button>
+    </div>
+    <div class="close-row">
       <button class="icon-btn" id="closeEditBtn" aria-label="Fechar">✕</button>
     </div>
   </div>
@@ -798,17 +855,78 @@
       <h2>Manutenção</h2>
     </div>
     <div class="screen-body scrollable">
-      <div class="section-label">Importar backup</div>
-      <div class="import-pick">
-        <input type="file" id="importFileInput" accept=".csv,.xlsx,.xls" style="display:none">
-        <button class="save-btn" id="importPickBtn">Selecionar arquivo</button>
-        <div id="importFileName" class="import-filename"></div>
+      <div class="maint-menu">
+        <button class="maint-item" id="maintImportBtn">
+          <span>Importar backup</span>
+          <span class="maint-chevron">›</span>
+        </button>
+        <button class="maint-item" id="maintRecorrenciaBtn">
+          <span>Lançamentos recorrentes</span>
+          <span class="maint-chevron">›</span>
+        </button>
       </div>
-      <div id="importSummary"></div>
-      <div class="import-future">Mais opções de manutenção em breve.</div>
+
+      <div id="maintImportSection" style="display:none">
+        <div class="section-label">Importar backup</div>
+        <div class="import-pick">
+          <input type="file" id="importFileInput" accept=".csv,.xlsx,.xls" style="display:none">
+          <button class="save-btn" id="importPickBtn">Selecionar arquivo</button>
+          <div id="importFileName" class="import-filename"></div>
+        </div>
+        <div id="importSummary"></div>
+      </div>
     </div>
     <div class="footer-bar" id="importFooter" style="display:none">
       <button class="save-btn" id="importConfirmBtn">Confirmar importação</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="recorrenciaListScreen">
+  <div class="screen-inner">
+    <div class="screen-header">
+      <h2>Lançamentos recorrentes</h2>
+    </div>
+    <div class="screen-body scrollable">
+      <div id="recorrenciaListBody"></div>
+    </div>
+    <div class="footer-bar">
+      <button class="save-btn" id="novaRecorrenciaBtn">NOVO LANÇAMENTO</button>
+    </div>
+    <div class="close-row">
+      <button class="icon-btn" id="closeRecorrenciaListBtn" aria-label="Fechar">✕</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="recorrenciaFormScreen">
+  <div class="screen-inner">
+    <div class="screen-header">
+      <h2>Novo lançamento recorrente</h2>
+    </div>
+    <div class="screen-body scrollable">
+      <div class="amount-card">
+        <div class="payer-stack" id="recPayerStack">
+          <button class="payer-chip luciana" data-payer="LUCIANA">LUCIANA</button>
+          <button class="payer-chip marcelo" data-payer="MARCELO">MARCELO</button>
+        </div>
+        <div class="amount-touch" id="recAmountField" role="button" aria-label="Tocar para digitar o valor">
+          <span class="amount-prefix">€</span>
+          <span class="amount-value" id="recAmountValue">0,00</span>
+        </div>
+      </div>
+      <div class="cat-grid" id="recCatGrid"></div>
+      <input type="text" class="desc-input" id="recDescInput" placeholder="Descrição">
+      <div class="section-label">Data de início</div>
+      <input type="date" class="desc-input" id="recDataInicio">
+      <div class="section-label">Data final</div>
+      <input type="date" class="desc-input" id="recDataFim">
+    </div>
+    <div class="footer-bar rec-footer">
+      <button class="save-btn" id="saveRecorrenciaBtn" disabled>Salvar recorrência</button>
+    </div>
+    <div class="close-row">
+      <button class="icon-btn" id="closeRecorrenciaFormBtn" aria-label="Fechar">✕</button>
     </div>
   </div>
 </div>
@@ -873,6 +991,7 @@
 
   var catGrid = document.getElementById('catGrid');
   var editCatGrid = document.getElementById('editCatGrid');
+  var recCatGrid = document.getElementById('recCatGrid');
 
   function buildCategoryGrid(container, defaultActiveIndex, onChange){
     CATEGORIAS.forEach(function(c, i){
@@ -890,6 +1009,7 @@
   }
   buildCategoryGrid(catGrid, -1, function(){ validarFormPrincipal(); });
   buildCategoryGrid(editCatGrid, -1);
+  buildCategoryGrid(recCatGrid, -1, function(){ validarFormRecorrencia(); });
 
   function attachPayerToggle(container, onChange){
     container.querySelectorAll('.payer-chip').forEach(function(btn){
@@ -908,6 +1028,7 @@
     validarFormPrincipal();
   });
   attachPayerToggle(document.getElementById('editPayerStack'));
+  attachPayerToggle(document.getElementById('recPayerStack'), function(){ validarFormRecorrencia(); });
 
   function toIso(d){
     var y = d.getFullYear();
@@ -934,6 +1055,7 @@
         dateStrip.querySelectorAll('.date-btn').forEach(function(x){ x.classList.remove('active'); });
         b.classList.add('active');
         window.selectedDateIso = iso;
+        validarFormPrincipal();
       });
       dateStrip.appendChild(b);
     })(i);
@@ -957,18 +1079,22 @@
     window.selectedDateIso = hiddenDatePicker.value;
     var parts = hiddenDatePicker.value.split('-');
     calBtn.innerHTML = '<span class="dow">' + parts[2] + '/' + parts[1] + '</span>';
+    validarFormPrincipal();
   });
   dateStrip.appendChild(calBtn);
 
-  // ---- Teclado numérico compartilhado entre "novo lançamento" e "edição" ----
+  // ---- Teclado numérico compartilhado entre "novo lançamento", "edição" e "recorrência" ----
   var amountEl = document.getElementById('amountValue');
   var editAmountEl = document.getElementById('editAmountValue');
+  var recAmountEl = document.getElementById('recAmountValue');
   var sheetValueEl = document.getElementById('sheetValue');
   var keypadSheet = document.getElementById('keypadSheet');
   var keypadBackdrop = document.getElementById('keypadBackdrop');
   var cents = 0;
   var centsEdicao = 0;
+  var centsRecorrencia = 0;
   var keypadContext = 'novo';
+  var FOOTER_POR_CONTEXTO = { novo: '.main-footer', edicao: '.edit-footer', recorrencia: '.rec-footer' };
 
   function formatCents(c){
     var v = (c / 100).toFixed(2).replace('.', ',');
@@ -978,8 +1104,14 @@
   }
   function renderAmount(){ amountEl.textContent = formatCents(cents); }
   function renderEditAmount(){ editAmountEl.textContent = formatCents(centsEdicao); }
+  function renderRecAmount(){ recAmountEl.textContent = formatCents(centsRecorrencia); }
+  function centsAtual(){
+    if (keypadContext === 'edicao') return centsEdicao;
+    if (keypadContext === 'recorrencia') return centsRecorrencia;
+    return cents;
+  }
   function updateSheetDisplay(){
-    sheetValueEl.textContent = '€ ' + formatCents(keypadContext === 'edicao' ? centsEdicao : cents);
+    sheetValueEl.textContent = '€ ' + formatCents(centsAtual());
   }
 
   function openKeypad(ctx){
@@ -987,13 +1119,26 @@
     updateSheetDisplay();
     keypadSheet.classList.add('open');
     keypadBackdrop.classList.add('open');
+    tabbar.style.display = 'none';
+    var footer = document.querySelector(FOOTER_POR_CONTEXTO[ctx]);
+    if (footer) footer.style.display = 'none';
+    if (ctx === 'edicao') document.querySelector('#editScreen .close-row').style.display = 'none';
+    if (ctx === 'recorrencia') document.querySelector('#recorrenciaFormScreen .close-row').style.display = 'none';
   }
   function closeKeypad(){
     keypadSheet.classList.remove('open');
     keypadBackdrop.classList.remove('open');
+    tabbar.style.display = '';
+    var footer = document.querySelector(FOOTER_POR_CONTEXTO[keypadContext]);
+    if (footer) footer.style.display = '';
+    if (keypadContext === 'edicao') document.querySelector('#editScreen .close-row').style.display = '';
+    if (keypadContext === 'recorrencia') document.querySelector('#recorrenciaFormScreen .close-row').style.display = '';
+    if (keypadContext === 'novo') validarFormPrincipal();
+    if (keypadContext === 'recorrencia') validarFormRecorrencia();
   }
   document.getElementById('amountField').addEventListener('click', function(){ openKeypad('novo'); });
   document.getElementById('editAmountField').addEventListener('click', function(){ openKeypad('edicao'); });
+  document.getElementById('recAmountField').addEventListener('click', function(){ openKeypad('recorrencia'); });
   keypadBackdrop.addEventListener('click', closeKeypad);
   document.getElementById('keypadDone').addEventListener('click', closeKeypad);
 
@@ -1001,18 +1146,20 @@
     var btn = e.target.closest('.key');
     if (!btn) return;
     var k = btn.dataset.k;
-    var c = keypadContext === 'edicao' ? centsEdicao : cents;
+    var c = centsAtual();
     if (k === 'back') {
       c = Math.floor(c / 10);
     } else if (k !== ',') {
       if (c < 100000000) c = c * 10 + parseInt(k, 10);
     }
     if (keypadContext === 'edicao') { centsEdicao = c; renderEditAmount(); }
+    else if (keypadContext === 'recorrencia') { centsRecorrencia = c; renderRecAmount(); validarFormRecorrencia(); }
     else { cents = c; renderAmount(); validarFormPrincipal(); }
     updateSheetDisplay();
   });
   renderAmount();
   renderEditAmount();
+  renderRecAmount();
 
   var descInput = document.getElementById('descInput');
   var footerBar = document.querySelector('.footer-bar:not(.edit-footer)');
@@ -1028,8 +1175,35 @@
     var catOk = !!catGrid.querySelector('.cat-btn.active');
     var valorOk = cents > 0;
     var descOk = descInput.value.trim().length > 0;
-    document.getElementById('saveBtn').disabled = !(payerOk && catOk && valorOk && descOk);
+    var dataOk = !!window.selectedDateIso;
+    document.getElementById('saveBtn').disabled = !(payerOk && catOk && valorOk && descOk && dataOk);
   }
+
+  function validarFormRecorrencia(){
+    var payerOk = !!document.querySelector('#recPayerStack .payer-chip.active');
+    var catOk = !!recCatGrid.querySelector('.cat-btn.active');
+    var valorOk = centsRecorrencia > 0;
+    var descOk = document.getElementById('recDescInput').value.trim().length > 0;
+    var inicio = document.getElementById('recDataInicio').value;
+    var fim = document.getElementById('recDataFim').value;
+    var periodoOk = !!inicio && !!fim && fim >= inicio;
+    document.getElementById('saveRecorrenciaBtn').disabled = !(payerOk && catOk && valorOk && descOk && periodoOk);
+  }
+  document.getElementById('recDescInput').addEventListener('input', validarFormRecorrencia);
+  document.getElementById('recDataInicio').addEventListener('change', validarFormRecorrencia);
+  document.getElementById('recDataFim').addEventListener('change', validarFormRecorrencia);
+
+  function resetFormRecorrencia(){
+    centsRecorrencia = 0;
+    renderRecAmount();
+    document.getElementById('recDescInput').value = '';
+    document.getElementById('recDataInicio').value = '';
+    document.getElementById('recDataFim').value = '';
+    document.querySelectorAll('#recPayerStack .payer-chip').forEach(function(x){ x.classList.remove('active'); });
+    recCatGrid.querySelectorAll('.cat-btn').forEach(function(x){ x.classList.remove('active'); });
+    validarFormRecorrencia();
+  }
+  window.resetFormRecorrencia = resetFormRecorrencia;
 
   window.getFormState = function(){
     var payerBtn = document.querySelector('#payerStack .payer-chip.active');
@@ -1047,7 +1221,26 @@
     cents = 0;
     renderAmount();
     descInput.value = '';
+    document.querySelectorAll('#payerStack .payer-chip').forEach(function(x){ x.classList.remove('active'); });
+    document.getElementById('appRoot').classList.remove('payer-luciana', 'payer-marcelo');
+    catGrid.querySelectorAll('.cat-btn').forEach(function(x){ x.classList.remove('active'); });
+    dateStrip.querySelectorAll('.date-btn').forEach(function(x){ x.classList.remove('active'); });
+    calBtn.innerHTML = ICONS.calendario;
+    window.selectedDateIso = null;
     validarFormPrincipal();
+  };
+  window.getRecorrenciaFormState = function(){
+    var payerBtn = document.querySelector('#recPayerStack .payer-chip.active');
+    var catBtn = recCatGrid.querySelector('.cat-btn.active');
+    return {
+      pagador: payerBtn ? payerBtn.dataset.payer : null,
+      categoria: catBtn ? catBtn.dataset.cat : null,
+      categoriaLabel: catBtn ? catBtn.querySelector('span').textContent : null,
+      descricao: document.getElementById('recDescInput').value.trim(),
+      valorCents: centsRecorrencia,
+      dataInicio: document.getElementById('recDataInicio').value,
+      dataFim: document.getElementById('recDataFim').value
+    };
   };
   validarFormPrincipal();
 
@@ -1084,47 +1277,60 @@
     window.fecharEdicaoScreen();
   });
 
+  // ---- Telas de Lançamentos recorrentes ----
+  var recorrenciaListScreen = document.getElementById('recorrenciaListScreen');
+  var recorrenciaFormScreen = document.getElementById('recorrenciaFormScreen');
+
+  document.getElementById('closeRecorrenciaListBtn').addEventListener('click', function(){
+    recorrenciaListScreen.classList.remove('open');
+  });
+  document.getElementById('novaRecorrenciaBtn').addEventListener('click', function(){
+    resetFormRecorrencia();
+    recorrenciaFormScreen.classList.add('open');
+  });
+  document.getElementById('closeRecorrenciaFormBtn').addEventListener('click', function(){
+    recorrenciaFormScreen.classList.remove('open');
+  });
+  window.fecharRecorrenciaForm = function(){ recorrenciaFormScreen.classList.remove('open'); };
+
   // ---- Navegação de mês na tela de Histórico (tabela) ----
-  var filterStrip = document.getElementById('filterStrip');
-  var filtrosPagador = new Set();
-  var filtrosCategoria = new Set();
-  window.getAlteracaoFiltro = function(){ return { pagadores: filtrosPagador, categorias: filtrosCategoria }; };
+  var filterStripPagador = document.getElementById('filterStripPagador');
+  var filterStripCategoria = document.getElementById('filterStripCategoria');
+  var filtroPagador = null;
+  var filtroCategoria = null;
+  window.getAlteracaoFiltro = function(){ return { pagador: filtroPagador, categoria: filtroCategoria }; };
 
-  function atualizarChipTodos(){
-    var algumAtivo = filtrosPagador.size > 0 || filtrosCategoria.size > 0;
-    filterStrip.firstElementChild.classList.toggle('active', !algumAtivo);
-  }
-
-  function addFiltroChip(label, tipo, valor, corClasse){
+  function addChipPagador(label, valor, corClasse){
     var b = document.createElement('button');
-    b.className = 'filter-chip' + (tipo === null ? ' active' : '');
+    b.className = 'filter-chip' + (valor === null ? ' active' : '');
     b.textContent = label;
     b.addEventListener('click', function(){
-      if (tipo === null) {
-        filtrosPagador.clear();
-        filtrosCategoria.clear();
-        filterStrip.querySelectorAll('.filter-chip').forEach(function(x){ x.classList.remove('active', 'luciana', 'marcelo'); });
-        b.classList.add('active');
-      } else {
-        var set = tipo === 'pagador' ? filtrosPagador : filtrosCategoria;
-        if (set.has(valor)) {
-          set.delete(valor);
-          b.classList.remove('active', 'luciana', 'marcelo');
-        } else {
-          set.add(valor);
-          b.classList.add('active');
-          if (corClasse) b.classList.add(corClasse);
-        }
-        atualizarChipTodos();
-      }
+      filtroPagador = valor;
+      filterStripPagador.querySelectorAll('.filter-chip').forEach(function(x){ x.classList.remove('active', 'luciana', 'marcelo'); });
+      b.classList.add('active');
+      if (corClasse) b.classList.add(corClasse);
       if (window.renderAlteracaoTable) window.renderAlteracaoTable();
     });
-    filterStrip.appendChild(b);
+    filterStripPagador.appendChild(b);
   }
-  addFiltroChip('Todos', null, null);
-  addFiltroChip('L', 'pagador', 'LUCIANA', 'luciana');
-  addFiltroChip('M', 'pagador', 'MARCELO', 'marcelo');
-  CATEGORIAS.forEach(function(c){ addFiltroChip(c.label, 'categoria', c.key); });
+  addChipPagador('Todos', null);
+  addChipPagador('L', 'LUCIANA', 'luciana');
+  addChipPagador('M', 'MARCELO', 'marcelo');
+
+  function addChipCategoria(label, valor){
+    var b = document.createElement('button');
+    b.className = 'filter-chip';
+    b.textContent = label;
+    b.addEventListener('click', function(){
+      var mesmo = filtroCategoria === valor;
+      filtroCategoria = mesmo ? null : valor;
+      filterStripCategoria.querySelectorAll('.filter-chip').forEach(function(x){ x.classList.remove('active'); });
+      if (!mesmo) b.classList.add('active');
+      if (window.renderAlteracaoTable) window.renderAlteracaoTable();
+    });
+    filterStripCategoria.appendChild(b);
+  }
+  CATEGORIAS.forEach(function(c){ addChipCategoria(c.label, c.key); });
 
   var monthOffset = 0;
   window.getMonthOffset = function(){ return monthOffset; };
@@ -1201,6 +1407,20 @@
     var found = CATEGORIAS.filter(function(c){ return c.key === key; })[0];
     return found ? found.label : 'Outros';
   }
+
+  var maintImportBtn = document.getElementById('maintImportBtn');
+  var maintRecorrenciaBtn = document.getElementById('maintRecorrenciaBtn');
+  var maintImportSection = document.getElementById('maintImportSection');
+
+  maintImportBtn.addEventListener('click', function(){
+    var abrir = maintImportSection.style.display === 'none';
+    maintImportSection.style.display = abrir ? '' : 'none';
+    maintImportBtn.classList.toggle('active', abrir);
+  });
+  maintRecorrenciaBtn.addEventListener('click', function(){
+    document.getElementById('recorrenciaListScreen').classList.add('open');
+    if (window.onRecorrenciaListOpen) window.onRecorrenciaListOpen();
+  });
 
   document.getElementById('importPickBtn').addEventListener('click', function(){
     document.getElementById('importFileInput').click();
@@ -1437,14 +1657,16 @@
     });
     meses.forEach(function(m){
       var t = totals[m.key];
-      var pL = Math.round((t.LUCIANA / max) * 100);
-      var pM = Math.round((t.MARCELO / max) * 100);
+      var pL = Math.round((t.LUCIANA / max) * 80);
+      var pM = Math.round((t.MARCELO / max) * 80);
+      var valL = '€' + Math.round(t.LUCIANA / 100);
+      var valM = '€' + Math.round(t.MARCELO / 100);
       var col = document.createElement('div');
       col.className = 'bar-month';
       col.innerHTML =
         '<div class="bar-pair">' +
-          '<div class="bar luciana" style="height:' + pL + '%"></div>' +
-          '<div class="bar marcelo" style="height:' + pM + '%"></div>' +
+          '<div class="bar-col">' + (t.LUCIANA > 0 ? '<span class="bar-val" style="bottom:' + pL + '%">' + valL + '</span>' : '') + '<div class="bar luciana" style="height:' + pL + '%"></div></div>' +
+          '<div class="bar-col">' + (t.MARCELO > 0 ? '<span class="bar-val" style="bottom:' + pM + '%">' + valM + '</span>' : '') + '<div class="bar marcelo" style="height:' + pM + '%"></div></div>' +
         '</div>' +
         '<div class="bar-month-label">' + m.label + '</div>';
       barChart.appendChild(col);
@@ -1517,14 +1739,14 @@
     var y = alvo.getFullYear(), m = alvo.getMonth();
     document.getElementById('monthLabel').textContent = MESES_LONGO[m] + '/' + y;
 
-    var filtro = window.getAlteracaoFiltro ? window.getAlteracaoFiltro() : { pagadores: new Set(), categorias: new Set() };
+    var filtro = window.getAlteracaoFiltro ? window.getAlteracaoFiltro() : { pagador: null, categoria: null };
     var linhas = allExpensesCache.filter(function(item){
       var d = item.data;
       if (!d.criado_em) return false;
       var dt = d.criado_em.toDate();
       if (dt.getFullYear() !== y || dt.getMonth() !== m) return false;
-      if (filtro.pagadores.size > 0 && !filtro.pagadores.has(d.pagador)) return false;
-      if (filtro.categorias.size > 0 && !filtro.categorias.has(d.categoria)) return false;
+      if (filtro.pagador && d.pagador !== filtro.pagador) return false;
+      if (filtro.categoria && d.categoria !== filtro.categoria) return false;
       return true;
     });
 
@@ -1543,9 +1765,9 @@
       var row = document.createElement('div');
       row.className = 'alt-row';
       row.innerHTML =
+        '<span class="alt-who ' + d.pagador + '"></span>' +
         '<span class="alt-day">' + dia + '</span>' +
         '<span><span class="alt-cat">' + catTexto + '</span>' + (d.descricao ? '<span class="alt-desc"> · ' + d.descricao + '</span>' : '') + '</span>' +
-        '<span class="alt-who ' + d.pagador + '"></span>' +
         '<span class="alt-val">€ ' + valor + '</span>';
       row.addEventListener('click', function(){ window.abrirEdicao(item.id, d); });
       body.appendChild(row);
@@ -1702,10 +1924,115 @@
     btn.textContent = 'Gravando… 0%';
     processarLote();
   });
+
+  // ---- Lançamentos recorrentes ----
+  function formatarDataCurta(iso){
+    var p = iso.split('-');
+    return p[2] + '/' + p[1] + '/' + p[0];
+  }
+
+  // Gera uma data por mês, no mesmo dia do início (ajustando meses mais curtos),
+  // do início até a data final (inclusive).
+  function gerarDatasRecorrencia(inicioIso, fimIso){
+    var inicio = new Date(inicioIso + 'T00:00:00');
+    var fim = new Date(fimIso + 'T00:00:00');
+    var diaAlvo = inicio.getDate();
+    var y = inicio.getFullYear();
+    var m = inicio.getMonth();
+    var datas = [];
+    for (var i = 0; i < 240; i++) { // limite de segurança: 20 anos
+      var ultimoDiaMes = new Date(y, m + 1, 0).getDate();
+      var dataGerada = new Date(y, m, Math.min(diaAlvo, ultimoDiaMes));
+      if (dataGerada > fim) break;
+      datas.push(dataGerada);
+      m++;
+      if (m > 11) { m = 0; y++; }
+    }
+    return datas;
+  }
+
+  var recorrenciaListAttached = false;
+  window.onRecorrenciaListOpen = function(){
+    if (recorrenciaListAttached) return;
+    recorrenciaListAttached = true;
+    var ref = collection(db, "households/" + HOUSEHOLD_ID + "/recurrences");
+    var q = query(ref, orderBy("criado_em", "desc"));
+    onSnapshot(q, function(snapshot){
+      var body = document.getElementById('recorrenciaListBody');
+      body.innerHTML = '';
+      if (snapshot.empty) {
+        body.innerHTML = '<div class="rec-empty">Nenhum lançamento recorrente cadastrado.</div>';
+        return;
+      }
+      snapshot.forEach(function(doc){
+        var d = doc.data();
+        var valor = ((d.valorCents || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+        var catTexto = d.categoriaLabel || d.categoria;
+        var row = document.createElement('div');
+        row.className = 'rec-item';
+        row.innerHTML =
+          '<span class="who ' + d.pagador + '"></span>' +
+          '<span><span class="cat">' + catTexto + (d.descricao ? ' · ' + d.descricao : '') + '</span>' +
+          '<div class="periodo">' + formatarDataCurta(d.data_inicio) + ' a ' + formatarDataCurta(d.data_fim) + '</div></span>' +
+          '<span class="val">€ ' + valor + '</span>';
+        body.appendChild(row);
+      });
+    }, function(err){
+      console.error('Erro ao carregar recorrências:', err);
+    });
+  };
+
+  document.getElementById('saveRecorrenciaBtn').addEventListener('click', function(){
+    var estado = window.getRecorrenciaFormState();
+    var btn = document.getElementById('saveRecorrenciaBtn');
+    var datas = gerarDatasRecorrencia(estado.dataInicio, estado.dataFim);
+    if (datas.length === 0) return;
+
+    btn.disabled = true;
+    var originalTxt = btn.textContent;
+    btn.textContent = 'Gravando…';
+
+    var recRef = collection(db, "households/" + HOUSEHOLD_ID + "/recurrences");
+    addDoc(recRef, {
+      pagador: estado.pagador,
+      categoria: estado.categoria,
+      categoriaLabel: estado.categoriaLabel,
+      descricao: estado.descricao,
+      valorCents: estado.valorCents,
+      data_inicio: estado.dataInicio,
+      data_fim: estado.dataFim,
+      criado_em: serverTimestamp()
+    }).then(function(recDoc){
+      var expRef = collection(db, "households/" + HOUSEHOLD_ID + "/expenses");
+      var batch = writeBatch(db);
+      datas.forEach(function(dt){
+        var iso = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+        batch.set(doc(expRef), {
+          pagador: estado.pagador,
+          categoria: estado.categoria,
+          categoriaLabel: estado.categoriaLabel,
+          descricao: estado.descricao,
+          valorCents: estado.valorCents,
+          data_despesa: iso,
+          criado_em: Timestamp.fromDate(dt),
+          recorrenciaId: recDoc.id
+        });
+      });
+      return batch.commit();
+    }).then(function(){
+      btn.disabled = false;
+      btn.textContent = originalTxt;
+      window.fecharRecorrenciaForm();
+    }).catch(function(err){
+      console.error('Erro ao salvar recorrência:', err);
+      btn.disabled = false;
+      btn.textContent = originalTxt;
+    });
+  });
 </script>
 <script>
   // Sincronizar com CACHE_VERSION em service-worker.js a cada nova versão.
-  var APP_VERSION = "1.1.1";
+  var APP_VERSION = "1.3.0";
   document.title = 'Despesas de Casa · v' + APP_VERSION;
   document.getElementById('versionTag').textContent = 'v' + APP_VERSION;
 
