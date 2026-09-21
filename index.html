@@ -115,8 +115,9 @@
     padding: 0 10px;
     height: 26px;
     border-radius: 8px;
-    border: 2px solid currentColor;
+    border: 1.5px solid var(--border);
     background: var(--surface);
+    color: var(--ink);
     font-size: 10.5px;
     font-weight: 800;
     letter-spacing: 0.2px;
@@ -126,10 +127,8 @@
     justify-content: center;
     cursor: pointer;
   }
-  .payer-chip.luciana{ color: var(--luciana); }
-  .payer-chip.marcelo{ color: var(--marcelo); }
-  .payer-chip.luciana.active{ background: var(--luciana); color: #fff; }
-  .payer-chip.marcelo.active{ background: var(--marcelo); color: #fff; }
+  .payer-chip.luciana.active{ background: var(--luciana); border-color: var(--luciana); color: #fff; }
+  .payer-chip.marcelo.active{ background: var(--marcelo); border-color: var(--marcelo); color: #fff; }
 
   /* Amount display */
   .amount-card{
@@ -220,6 +219,24 @@
   .desc-input::placeholder{ color: var(--ink-soft); }
   .desc-input:focus{ outline: none; border-color: var(--border-strong); }
 
+  .desc-suggestions{
+    display: none;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: -8px 0 14px;
+  }
+  .desc-suggestion-chip{
+    padding: 5px 10px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    color: var(--ink-soft);
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .desc-suggestion-chip:active{ background: var(--surface-2); }
+
   /* Date strip */
   .date-strip{
     display: grid;
@@ -272,7 +289,7 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s ease;
-    z-index: 20;
+    z-index: 40;
   }
   .keypad-backdrop.open{ opacity: 1; pointer-events: auto; }
 
@@ -288,7 +305,7 @@
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
     transition: transform 0.25s ease;
-    z-index: 21;
+    z-index: 41;
   }
   .keypad-sheet.open{ transform: translate(-50%, 0); }
 
@@ -409,6 +426,48 @@
   .tab-btn svg{ width: 20px; height: 20px; }
   .tab-btn span{ font-size: 10px; font-weight: 600; }
   .tab-btn.active{ color: var(--accent); }
+  @keyframes alertBlink{ 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+  .tab-btn.alert-on svg{ color: #E5484D; animation: alertBlink 1s ease-in-out infinite; }
+  .tab-btn.alert-on span{ color: #E5484D; }
+
+  .modal-backdrop{
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 45;
+  }
+  .modal-backdrop.open{ opacity: 1; pointer-events: auto; }
+  .modal-card{
+    position: fixed;
+    left: 50%;
+    bottom: 0;
+    transform: translate(-50%, 100%);
+    width: 100%;
+    max-width: 460px;
+    max-height: 72vh;
+    background: var(--bg);
+    padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    transition: transform 0.25s ease;
+    z-index: 46;
+    display: flex;
+    flex-direction: column;
+  }
+  .modal-card.open{ transform: translate(-50%, 0); }
+  .modal-header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    flex: none;
+  }
+  .modal-header h3{ font-size: 15px; margin: 0; }
+  .modal-body{ overflow-y: auto; flex: 1; min-height: 0; }
+  .modal-close-row{ flex: none; display: flex; justify-content: flex-end; padding-top: 10px; }
 
   /* Tela de histórico */
   .screen{
@@ -563,6 +622,97 @@
   .pie-legend-item .pct{ color: var(--ink-soft); font-size: 11px; }
 
   .screen-body.scrollable{ overflow-y: auto; }
+  #historicoScreen .screen-body{ overflow-y: auto; }
+  #historicoScreen .chart-block{ flex: none; min-height: 300px; }
+
+  .chart-filter-strip{
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+    flex: none;
+  }
+  .chart-filter-strip .filter-chip{ flex: 1; text-align: center; }
+
+  .donut-wrap{
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    min-height: 0;
+  }
+  .donut{
+    position: relative;
+    width: 46%;
+    aspect-ratio: 1;
+    max-width: 160px;
+    border-radius: 50%;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .donut-hole{
+    position: absolute;
+    width: 62%;
+    height: 62%;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 2px dashed var(--border-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .donut-hole .donut-total{
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .donut-legend{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 12.5px;
+  }
+  .cat-pie-wrap{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 0;
+  }
+  .cat-pie-row{
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .cat-pie{
+    width: 92px;
+    height: 92px;
+    border-radius: 50%;
+    flex: none;
+  }
+  .cat-pie-legend{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 180px;
+    overflow-y: auto;
+    font-size: 11.5px;
+  }
+  .cat-pie-legend-item{
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: space-between;
+  }
+  .cat-pie-legend-item .name-wrap{ display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .cat-pie-legend-item .name-wrap .legend-dot{ flex: none; }
+  .cat-pie-legend-item .name{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cat-pie-legend-item .amt{ flex: none; color: var(--ink-soft); font-variant-numeric: tabular-nums; white-space: nowrap; }
 
   .month-nav{
     flex: none;
@@ -733,6 +883,7 @@
     </div>
 
     <input type="text" class="desc-input" id="descInput" placeholder="Descrição">
+    <div class="desc-suggestions" id="descSuggestions"></div>
 
     <div class="date-strip" id="dateStrip">
       <!-- filled by JS -->
@@ -774,6 +925,10 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     <span>Manutenção</span>
   </button>
+  <button class="tab-btn" data-tab="alertas" id="alertasTabBtn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a5 5 0 0 0-5 5v2a7 7 0 0 1-2.3 5.2L4 16h16l-.7-.8A7 7 0 0 1 17 10V8a5 5 0 0 0-5-5z"/><path d="M9 16v1a3 3 0 0 0 6 0v-1"/></svg>
+    <span>Alertas</span>
+  </button>
 </div>
 
 <div class="screen" id="historicoScreen">
@@ -791,10 +946,20 @@
         </div>
       </div>
       <div class="chart-block">
-        <div class="chart-title">Participação no total geral</div>
-        <div class="pie-wrap">
-          <div class="pie" id="pieChart"></div>
-          <div class="pie-legend" id="pieLegend"></div>
+        <div class="chart-title">Total de despesas</div>
+        <div class="chart-filter-strip" id="donutFilterStrip"></div>
+        <div class="donut-wrap">
+          <div class="donut" id="donutChart"><div class="donut-hole"><span class="donut-total" id="donutTotal">€ 0</span></div></div>
+          <div class="donut-legend" id="donutLegend"></div>
+        </div>
+      </div>
+      <div class="chart-block">
+        <div class="chart-title">Despesas por categoria</div>
+        <div class="cat-pie-wrap">
+          <div class="cat-pie-row">
+            <div class="cat-pie" id="catPieChart"></div>
+            <div class="cat-pie-legend" id="catPieLegend"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -893,9 +1058,6 @@
     <div class="footer-bar">
       <button class="save-btn" id="novaRecorrenciaBtn">NOVO LANÇAMENTO</button>
     </div>
-    <div class="close-row">
-      <button class="icon-btn" id="closeRecorrenciaListBtn" aria-label="Fechar">✕</button>
-    </div>
   </div>
 </div>
 
@@ -925,9 +1087,6 @@
     <div class="footer-bar rec-footer">
       <button class="save-btn" id="saveRecorrenciaBtn" disabled>Salvar recorrência</button>
     </div>
-    <div class="close-row">
-      <button class="icon-btn" id="closeRecorrenciaFormBtn" aria-label="Fechar">✕</button>
-    </div>
   </div>
 </div>
 
@@ -950,6 +1109,19 @@
     <button class="key func" data-k=",">,</button>
     <button class="key" data-k="0">0</button>
     <button class="key func" data-k="back">⌫</button>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="alertasBackdrop"></div>
+<div class="modal-card" id="alertasModal">
+  <div class="modal-header">
+    <h3>Lançamentos pendentes (€ 0,01)</h3>
+  </div>
+  <div class="modal-body">
+    <div id="alertasListBody"></div>
+  </div>
+  <div class="modal-close-row">
+    <button class="icon-btn" id="closeAlertasBtn" aria-label="Fechar">✕</button>
   </div>
 </div>
 
@@ -1002,12 +1174,50 @@
       b.addEventListener('click', function(){
         container.querySelectorAll('.cat-btn').forEach(function(x){ x.classList.remove('active'); });
         b.classList.add('active');
-        if (onChange) onChange();
+        if (onChange) onChange(c.key);
       });
       container.appendChild(b);
     });
   }
-  buildCategoryGrid(catGrid, -1, function(){ validarFormPrincipal(); });
+
+  // ---- Sugestões de descrição por categoria (últimas 5, guardadas localmente) ----
+  function chaveHistoricoDesc(catKey){ return 'descHistory_' + catKey; }
+  function getDescHistory(catKey){
+    try {
+      var raw = localStorage.getItem(chaveHistoricoDesc(catKey));
+      var list = raw ? JSON.parse(raw) : [];
+      return Array.isArray(list) ? list : [];
+    } catch (e) { return []; }
+  }
+  function addDescHistory(catKey, desc){
+    if (!catKey || !desc) return;
+    try {
+      var list = getDescHistory(catKey).filter(function(d){ return d.toLowerCase() !== desc.toLowerCase(); });
+      list.unshift(desc);
+      if (list.length > 5) list = list.slice(0, 5);
+      localStorage.setItem(chaveHistoricoDesc(catKey), JSON.stringify(list));
+    } catch (e) { /* localStorage indisponível: ignora silenciosamente */ }
+  }
+  var descSuggestions = document.getElementById('descSuggestions');
+  function renderDescSuggestions(catKey){
+    descSuggestions.innerHTML = '';
+    var list = catKey ? getDescHistory(catKey) : [];
+    if (!list.length) { descSuggestions.style.display = 'none'; return; }
+    descSuggestions.style.display = 'flex';
+    list.forEach(function(desc){
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'desc-suggestion-chip';
+      chip.textContent = desc;
+      chip.addEventListener('click', function(){
+        descInput.value = desc;
+        validarFormPrincipal();
+      });
+      descSuggestions.appendChild(chip);
+    });
+  }
+
+  buildCategoryGrid(catGrid, -1, function(catKey){ validarFormPrincipal(); renderDescSuggestions(catKey); });
   buildCategoryGrid(editCatGrid, -1);
   buildCategoryGrid(recCatGrid, -1, function(){ validarFormRecorrencia(); });
 
@@ -1227,6 +1437,7 @@
     dateStrip.querySelectorAll('.date-btn').forEach(function(x){ x.classList.remove('active'); });
     calBtn.innerHTML = ICONS.calendario;
     window.selectedDateIso = null;
+    renderDescSuggestions(null);
     validarFormPrincipal();
   };
   window.getRecorrenciaFormState = function(){
@@ -1257,7 +1468,31 @@
     manutencao: importScreen
   };
 
+  // ---- Telas de Lançamentos recorrentes ----
+  var recorrenciaListScreen = document.getElementById('recorrenciaListScreen');
+  var recorrenciaFormScreen = document.getElementById('recorrenciaFormScreen');
+
+  // Reinicia qualquer operação de Manutenção em andamento (import ou recorrência),
+  // acionado sempre que qualquer aba do menu inferior é tocada.
+  function resetManutencaoState(){
+    recorrenciaFormScreen.classList.remove('open');
+    recorrenciaListScreen.classList.remove('open');
+    maintImportSection.style.display = 'none';
+    maintImportBtn.classList.remove('active');
+    var fname = document.getElementById('importFileName');
+    var fsum = document.getElementById('importSummary');
+    var ffoot = document.getElementById('importFooter');
+    var finput = document.getElementById('importFileInput');
+    if (fname) fname.textContent = '';
+    if (fsum) fsum.innerHTML = '';
+    if (ffoot) ffoot.style.display = 'none';
+    if (finput) finput.value = '';
+    window.importedRows = [];
+    resetFormRecorrencia();
+  }
+
   function irParaAba(nome){
+    resetManutencaoState();
     Object.keys(TAB_SCREENS).forEach(function(k){ TAB_SCREENS[k].classList.remove('open'); });
     editScreen.classList.remove('open');
     tabbar.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.tab === nome); });
@@ -1268,7 +1503,10 @@
     }
   }
   tabbar.querySelectorAll('.tab-btn').forEach(function(btn){
-    btn.addEventListener('click', function(){ irParaAba(btn.dataset.tab); });
+    btn.addEventListener('click', function(){
+      if (btn.dataset.tab === 'alertas') { window.abrirAlertas(); return; }
+      irParaAba(btn.dataset.tab);
+    });
   });
 
   window.abrirEdicaoScreen = function(){ editScreen.classList.add('open'); };
@@ -1277,19 +1515,9 @@
     window.fecharEdicaoScreen();
   });
 
-  // ---- Telas de Lançamentos recorrentes ----
-  var recorrenciaListScreen = document.getElementById('recorrenciaListScreen');
-  var recorrenciaFormScreen = document.getElementById('recorrenciaFormScreen');
-
-  document.getElementById('closeRecorrenciaListBtn').addEventListener('click', function(){
-    recorrenciaListScreen.classList.remove('open');
-  });
   document.getElementById('novaRecorrenciaBtn').addEventListener('click', function(){
     resetFormRecorrencia();
     recorrenciaFormScreen.classList.add('open');
-  });
-  document.getElementById('closeRecorrenciaFormBtn').addEventListener('click', function(){
-    recorrenciaFormScreen.classList.remove('open');
   });
   window.fecharRecorrenciaForm = function(){ recorrenciaFormScreen.classList.remove('open'); };
 
@@ -1314,8 +1542,8 @@
     filterStripPagador.appendChild(b);
   }
   addChipPagador('Todos', null);
-  addChipPagador('L', 'LUCIANA', 'luciana');
-  addChipPagador('M', 'MARCELO', 'marcelo');
+  addChipPagador('LUCIANA', 'LUCIANA', 'luciana');
+  addChipPagador('MARCELO', 'MARCELO', 'marcelo');
 
   function addChipCategoria(label, valor){
     var b = document.createElement('button');
@@ -1584,6 +1812,8 @@
     pronto = true;
     syncLabel.textContent = "Últimos lançamentos";
     escutarUltimosLancamentos();
+    attachAllExpensesListener();
+    if (allExpensesSubscribers.indexOf(atualizarAlertaSirene) === -1) allExpensesSubscribers.push(atualizarAlertaSirene);
   });
 
   function formatDataCurta(iso){
@@ -1673,19 +1903,82 @@
     });
   }
 
-  function renderPieChart(overall){
+  // ---- Gráfico 2: rosca (donut) do total de despesas por pessoa, com filtro de período ----
+  var DONUT_FILTROS = [
+    { key: 'mes', label: 'Mês' },
+    { key: '6m', label: '6 meses' },
+    { key: '12m', label: '12 meses' },
+    { key: 'total', label: 'Total' }
+  ];
+  var donutFiltro = 'mes';
+  var donutFilterStrip = document.getElementById('donutFilterStrip');
+  DONUT_FILTROS.forEach(function(f){
+    var b = document.createElement('button');
+    b.className = 'filter-chip' + (f.key === donutFiltro ? ' active' : '');
+    b.textContent = f.label;
+    b.addEventListener('click', function(){
+      donutFiltro = f.key;
+      donutFilterStrip.querySelectorAll('.filter-chip').forEach(function(x){ x.classList.remove('active'); });
+      b.classList.add('active');
+      renderHistorico();
+    });
+    donutFilterStrip.appendChild(b);
+  });
+  function itemDentroDoPeriodoDonut(dt, now){
+    if (donutFiltro === 'total') return true;
+    if (donutFiltro === 'mes') return dt.getFullYear() === now.getFullYear() && dt.getMonth() === now.getMonth();
+    var meses = donutFiltro === '6m' ? 6 : 12;
+    var limite = new Date(now.getFullYear(), now.getMonth() - (meses - 1), 1);
+    return dt >= limite;
+  }
+  function renderDonutChart(overall){
     var total = overall.LUCIANA + overall.MARCELO;
     var pctL = total > 0 ? Math.round((overall.LUCIANA / total) * 100) : 50;
-    var pctM = 100 - pctL;
-    var pie = document.getElementById('pieChart');
+    var donut = document.getElementById('donutChart');
     var cssL = getComputedStyle(document.documentElement).getPropertyValue('--luciana').trim();
     var cssM = getComputedStyle(document.documentElement).getPropertyValue('--marcelo').trim();
-    pie.style.background = total > 0
+    donut.style.background = total > 0
       ? 'conic-gradient(' + cssL + ' 0% ' + pctL + '%, ' + cssM + ' ' + pctL + '% 100%)'
       : 'var(--surface-2)';
-    document.getElementById('pieLegend').innerHTML =
-      '<div class="pie-legend-item"><span class="legend-item"><span class="legend-dot luciana"></span><span class="name">Luciana</span></span><div class="pct">€ ' + (overall.LUCIANA / 100).toFixed(2) + ' · ' + pctL + '%</div></div>' +
-      '<div class="pie-legend-item"><span class="legend-item"><span class="legend-dot marcelo"></span><span class="name">Marcelo</span></span><div class="pct">€ ' + (overall.MARCELO / 100).toFixed(2) + ' · ' + pctM + '%</div></div>';
+    document.getElementById('donutTotal').textContent = '€ ' + Math.round(total / 100).toLocaleString('pt-BR');
+    document.getElementById('donutLegend').innerHTML =
+      '<div class="pie-legend-item"><span class="legend-item"><span class="legend-dot luciana"></span><span class="name">Luciana</span></span><div class="pct">€ ' + (overall.LUCIANA / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + '</div></div>' +
+      '<div class="pie-legend-item"><span class="legend-item"><span class="legend-dot marcelo"></span><span class="name">Marcelo</span></span><div class="pct">€ ' + (overall.MARCELO / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + '</div></div>';
+  }
+
+  // ---- Gráfico 3: pizza de despesas por categoria (mesmo período do filtro acima) ----
+  var CAT_COLORS = ['#E67E22','#3498DB','#9B59B6','#1ABC9C','#F1C40F','#E74C3C','#2ECC71','#8E44AD','#16A085','#D35400','#2980B9','#C0392B','#27AE60','#7F8C8D'];
+  function corDaCategoria(key){
+    var idx = CATEGORIAS.findIndex(function(c){ return c.key === key; });
+    return CAT_COLORS[idx >= 0 ? idx % CAT_COLORS.length : 0];
+  }
+  function renderCategoryPie(porCategoria){
+    var entries = CATEGORIAS.map(function(c){ return { key: c.key, label: c.label, valor: porCategoria[c.key] || 0 }; })
+      .filter(function(e){ return e.valor > 0; })
+      .sort(function(a, b){ return b.valor - a.valor; });
+    var total = entries.reduce(function(s, e){ return s + e.valor; }, 0);
+    var pieEl = document.getElementById('catPieChart');
+    var legendEl = document.getElementById('catPieLegend');
+    if (!entries.length || total === 0) {
+      pieEl.style.background = 'var(--surface-2)';
+      legendEl.innerHTML = '<div class="alt-empty">Sem despesas no período.</div>';
+      return;
+    }
+    var acc = 0;
+    var stops = entries.map(function(e){
+      var pctStart = (acc / total) * 100;
+      acc += e.valor;
+      var pctEnd = (acc / total) * 100;
+      return corDaCategoria(e.key) + ' ' + pctStart.toFixed(2) + '% ' + pctEnd.toFixed(2) + '%';
+    });
+    pieEl.style.background = 'conic-gradient(' + stops.join(', ') + ')';
+    legendEl.innerHTML = entries.map(function(e){
+      var pct = Math.round((e.valor / total) * 100);
+      return '<div class="cat-pie-legend-item">' +
+        '<span class="name-wrap"><span class="legend-dot" style="background:' + corDaCategoria(e.key) + '"></span><span class="name">' + e.label + '</span></span>' +
+        '<span class="amt">€ ' + (e.valor / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + ' · ' + pct + '%</span>' +
+      '</div>';
+    }).join('');
   }
 
   // ---- Cache compartilhado com todos os lançamentos (Histórico + Alteração) ----
@@ -1710,17 +2003,24 @@
     var meses = ultimosMeses(4);
     var totals = {};
     meses.forEach(function(m){ totals[m.key] = { LUCIANA: 0, MARCELO: 0 }; });
-    var overall = { LUCIANA: 0, MARCELO: 0 };
+    var overallPeriodo = { LUCIANA: 0, MARCELO: 0 };
+    var porCategoriaPeriodo = {};
+    var now = new Date();
     allExpensesCache.forEach(function(item){
       var d = item.data;
       if (!d.criado_em || !d.pagador) return; // aguardando confirmação do servidor
       var dt = d.criado_em.toDate();
       var key = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0');
       if (totals[key]) totals[key][d.pagador] = (totals[key][d.pagador] || 0) + (d.valorCents || 0);
-      overall[d.pagador] = (overall[d.pagador] || 0) + (d.valorCents || 0);
+      if (itemDentroDoPeriodoDonut(dt, now)) {
+        overallPeriodo[d.pagador] = (overallPeriodo[d.pagador] || 0) + (d.valorCents || 0);
+        var cat = d.categoria || 'outros';
+        porCategoriaPeriodo[cat] = (porCategoriaPeriodo[cat] || 0) + (d.valorCents || 0);
+      }
     });
     renderBarChart(meses, totals);
-    renderPieChart(overall);
+    renderDonutChart(overallPeriodo);
+    renderCategoryPie(porCategoriaPeriodo);
   }
 
   window.onHistoricoOpen = function(){
@@ -1780,6 +2080,68 @@
     window.renderAlteracaoTable();
   };
 
+  // ---- Alerta (sirene): lançamentos de meses anteriores ainda com €0,01 pendentes ----
+  var alertasTabBtn = document.getElementById('alertasTabBtn');
+  var alertasBackdrop = document.getElementById('alertasBackdrop');
+  var alertasModal = document.getElementById('alertasModal');
+  var alertasListBody = document.getElementById('alertasListBody');
+
+  function calcularAlertasPendentes(){
+    var now = new Date();
+    var anoAtual = now.getFullYear(), mesAtual = now.getMonth();
+    return allExpensesCache.filter(function(item){
+      var d = item.data;
+      if (!d.data_despesa || d.valorCents !== 1) return false;
+      var p = d.data_despesa.split('-');
+      if (p.length < 2) return false;
+      var y = parseInt(p[0], 10), m = parseInt(p[1], 10) - 1;
+      return (y < anoAtual) || (y === anoAtual && m < mesAtual);
+    });
+  }
+
+  function atualizarAlertaSirene(){
+    alertasTabBtn.classList.toggle('alert-on', calcularAlertasPendentes().length > 0);
+  }
+
+  function renderAlertasLista(){
+    var pendentes = calcularAlertasPendentes().sort(function(a, b){
+      return (a.data.data_despesa || '').localeCompare(b.data.data_despesa || '');
+    });
+    if (!pendentes.length) {
+      alertasListBody.innerHTML = '<div class="rec-empty">Nenhum lançamento pendente de meses anteriores.</div>';
+      return;
+    }
+    alertasListBody.innerHTML = '';
+    pendentes.forEach(function(item){
+      var d = item.data;
+      var catTexto = d.categoriaLabel || d.categoria;
+      var row = document.createElement('div');
+      row.className = 'rec-item';
+      row.innerHTML =
+        '<span class="who ' + d.pagador + '"></span>' +
+        '<span><span class="cat">' + catTexto + (d.descricao ? ' · ' + d.descricao : '') + '</span>' +
+        '<div class="periodo">' + formatarDataCurta(d.data_despesa) + '</div></span>' +
+        '<span class="val">€ 0,01</span>';
+      row.addEventListener('click', function(){
+        fecharAlertas();
+        window.abrirEdicao(item.id, d);
+      });
+      alertasListBody.appendChild(row);
+    });
+  }
+
+  function fecharAlertas(){
+    alertasModal.classList.remove('open');
+    alertasBackdrop.classList.remove('open');
+  }
+  window.abrirAlertas = function(){
+    renderAlertasLista();
+    alertasModal.classList.add('open');
+    alertasBackdrop.classList.add('open');
+  };
+  document.getElementById('closeAlertasBtn').addEventListener('click', fecharAlertas);
+  alertasBackdrop.addEventListener('click', fecharAlertas);
+
   saveBtn.addEventListener('click', function(){
     var estado = window.getFormState();
     if (!estado.pagador) {
@@ -1804,6 +2166,7 @@
       data_despesa: estado.dataIso,
       criado_em: serverTimestamp()
     }).then(function(){
+      addDescHistory(estado.categoria, estado.descricao);
       window.resetForm();
     }).catch(function(err){
       // Com persistência offline habilitada, isto normalmente só falha
@@ -2032,7 +2395,7 @@
 </script>
 <script>
   // Sincronizar com CACHE_VERSION em service-worker.js a cada nova versão.
-  var APP_VERSION = "1.3.0";
+  var APP_VERSION = "1.4.2";
   document.title = 'Despesas de Casa · v' + APP_VERSION;
   document.getElementById('versionTag').textContent = 'v' + APP_VERSION;
 
