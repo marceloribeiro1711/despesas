@@ -1003,6 +1003,17 @@
   </div>
 </div>
 
+<div class="screen" id="alertasScreen">
+  <div class="screen-inner">
+    <div class="screen-header">
+      <h2>Alertas — pendentes (€ 0,01)</h2>
+    </div>
+    <div class="screen-body scrollable">
+      <div id="alertasListBody"></div>
+    </div>
+  </div>
+</div>
+
 <div class="screen" id="editScreen">
   <div class="screen-inner">
     <div class="screen-header">
@@ -1040,10 +1051,6 @@
     </div>
     <div class="screen-body scrollable">
       <div class="maint-menu">
-        <button class="maint-item" id="maintImportBtn">
-          <span>Importar backup</span>
-          <span class="maint-chevron">›</span>
-        </button>
         <button class="maint-item" id="maintRecorrenciaBtn">
           <span>Lançamentos recorrentes</span>
           <span class="maint-chevron">›</span>
@@ -1051,6 +1058,10 @@
         <button class="maint-item" id="maintBackupBtn">
           <span>Gerar backup</span>
           <span class="maint-chevron">↓</span>
+        </button>
+        <button class="maint-item" id="maintImportBtn">
+          <span>Importar backup</span>
+          <span class="maint-chevron">›</span>
         </button>
       </div>
       <div id="maintBackupStatus" class="import-filename"></div>
@@ -1133,19 +1144,6 @@
     <button class="key func" data-k=",">,</button>
     <button class="key" data-k="0">0</button>
     <button class="key func" data-k="back">⌫</button>
-  </div>
-</div>
-
-<div class="modal-backdrop" id="alertasBackdrop"></div>
-<div class="modal-card" id="alertasModal">
-  <div class="modal-header">
-    <h3>Lançamentos pendentes (€ 0,01)</h3>
-  </div>
-  <div class="modal-body">
-    <div id="alertasListBody"></div>
-  </div>
-  <div class="modal-close-row">
-    <button class="icon-btn" id="closeAlertasBtn" aria-label="Fechar">✕</button>
   </div>
 </div>
 
@@ -1512,10 +1510,13 @@
   var importScreen = document.getElementById('importScreen'); // aba Manutenção
   var tabbar = document.getElementById('tabbar');
 
+  var alertasScreen = document.getElementById('alertasScreen');
+
   var TAB_SCREENS = {
     graficos: historicoScreen,
     historico: alteracaoScreen,
-    manutencao: importScreen
+    manutencao: importScreen,
+    alertas: alertasScreen
   };
 
   // ---- Telas de Lançamentos recorrentes ----
@@ -1551,11 +1552,11 @@
       TAB_SCREENS[nome].classList.add('open');
       if (nome === 'graficos' && window.onHistoricoOpen) window.onHistoricoOpen();
       if (nome === 'historico' && window.onAlteracaoOpen) window.onAlteracaoOpen();
+      if (nome === 'alertas' && window.onAlertasOpen) window.onAlertasOpen();
     }
   }
   tabbar.querySelectorAll('.tab-btn').forEach(function(btn){
     btn.addEventListener('click', function(){
-      if (btn.dataset.tab === 'alertas') { window.abrirAlertas(); return; }
       irParaAba(btn.dataset.tab);
     });
   });
@@ -2109,6 +2110,8 @@
       if (filtro.categoria && d.categoria !== filtro.categoria) return false;
       return true;
     });
+    // Ordena da data de pagamento mais recente para a mais antiga dentro do mês.
+    linhas.sort(function(a, b){ return (b.data.data_despesa || '').localeCompare(a.data.data_despesa || ''); });
 
     var body = document.getElementById('altTableBody');
     body.innerHTML = '';
@@ -2135,6 +2138,15 @@
   };
 
   window.onAlteracaoOpen = function(){
+    // Sempre volta com filtros desmarcados e no mês atual ao entrar na aba.
+    monthOffset = 0;
+    filtroPagador = null;
+    filtroCategoria = null;
+    filterStripPagador.querySelectorAll('.filter-chip').forEach(function(x){
+      x.classList.remove('active', 'luciana', 'marcelo');
+    });
+    filterStripPagador.querySelector('.filter-chip').classList.add('active'); // "Todos"
+    filterStripCategoria.querySelectorAll('.filter-chip').forEach(function(x){ x.classList.remove('active'); });
     attachAllExpensesListener();
     if (allExpensesSubscribers.indexOf(window.renderAlteracaoTable) === -1) allExpensesSubscribers.push(window.renderAlteracaoTable);
     window.renderAlteracaoTable();
@@ -2142,8 +2154,6 @@
 
   // ---- Alerta (sirene): lançamentos de meses anteriores ainda com €0,01 pendentes ----
   var alertasTabBtn = document.getElementById('alertasTabBtn');
-  var alertasBackdrop = document.getElementById('alertasBackdrop');
-  var alertasModal = document.getElementById('alertasModal');
   var alertasListBody = document.getElementById('alertasListBody');
 
   function calcularAlertasPendentes(){
@@ -2183,24 +2193,17 @@
         '<div class="periodo">' + formatarDataCurta(d.data_despesa) + '</div></span>' +
         '<span class="val">€ 0,01</span>';
       row.addEventListener('click', function(){
-        fecharAlertas();
         window.abrirEdicao(item.id, d);
       });
       alertasListBody.appendChild(row);
     });
   }
 
-  function fecharAlertas(){
-    alertasModal.classList.remove('open');
-    alertasBackdrop.classList.remove('open');
-  }
-  window.abrirAlertas = function(){
+  window.onAlertasOpen = function(){
     renderAlertasLista();
-    alertasModal.classList.add('open');
-    alertasBackdrop.classList.add('open');
+    var body = alertasScreen.querySelector('.screen-body');
+    if (body) body.scrollTop = 0; // sempre apresenta o topo da lista ao abrir
   };
-  document.getElementById('closeAlertasBtn').addEventListener('click', fecharAlertas);
-  alertasBackdrop.addEventListener('click', fecharAlertas);
 
   // ---- Modal de confirmação genérico (substitui o confirm() nativo do navegador) ----
   var confirmBackdrop = document.getElementById('confirmBackdrop');
@@ -2499,6 +2502,8 @@
         : 'Confirma que "' + (file ? file.name : 'o arquivo selecionado') + '" é exatamente o arquivo de backup que deseja importar?';
       pedirConfirmacao('Confirmar arquivo de backup', mensagem, 'Sim, é este o arquivo', function(ok){
         if (!ok) return;
+        document.getElementById('importSummary').innerHTML =
+          '<div class="import-block"><p>Aguarde, preparando importação…</p></div>';
         apagarTodosOsLancamentos().then(function(){
           iniciarImportacao(true);
         }).catch(function(err){
@@ -2514,7 +2519,12 @@
       'Deseja apagar TODOS os lançamentos existentes antes de importar este backup?',
       'Apagar tudo e importar',
       function(apagarTudo){
-        if (!apagarTudo) { iniciarImportacao(false); return; }
+        if (!apagarTudo) {
+          document.getElementById('importSummary').innerHTML =
+            '<div class="import-block"><p>Aguarde, preparando importação…</p></div>';
+          iniciarImportacao(false);
+          return;
+        }
         pedirConfirmacao(
           'Apagar todos os lançamentos',
           'Essa operação é irreversível. Tem certeza?',
@@ -2643,12 +2653,12 @@
       escolherEscopo(recId, d, 'editar');
     });
     document.getElementById('recActionDeleteBtn').addEventListener('click', function(){
-      escolherEscopo(recId, d, 'excluir');
+      confirmarExclusaoRecorrencia(recId, d);
     });
   }
 
   function escolherEscopo(recId, d, acao){
-    recActionTitle.textContent = acao === 'editar' ? 'Alterar quais lançamentos?' : 'Excluir quais lançamentos?';
+    recActionTitle.textContent = 'Alterar quais lançamentos?';
     recActionBody.innerHTML =
       '<p class="rec-action-summary">Escolha o alcance da operação.</p>' +
       '<div class="rec-action-list">' +
@@ -2658,36 +2668,64 @@
       '</div>';
     recActionBody.querySelectorAll('[data-escopo]').forEach(function(btn){
       btn.addEventListener('click', function(){
-        if (acao === 'editar') abrirFormEdicaoRecorrencia(recId, d, btn.dataset.escopo);
-        else confirmarExclusaoRecorrencia(recId, btn.dataset.escopo);
+        abrirFormEdicaoRecorrencia(recId, d, btn.dataset.escopo);
       });
     });
   }
 
-  function confirmarExclusaoRecorrencia(recId, escopo){
-    contarExpensesPorEscopo(recId, escopo).then(function(docs){
-      var n = docs.length;
+  // Excluir um lançamento recorrente sempre apaga a configuração da recorrência
+  // (não faz mais sentido mantê-la) e todos os lançamentos futuros já gerados.
+  // Lançamentos passados nunca são apagados nessa operação.
+  function confirmarExclusaoRecorrencia(recId, d){
+    contarExpensesPorEscopo(recId, 'futuro').then(function(docsFuturos){
+      var n = docsFuturos.length;
       pedirConfirmacao(
-        'Excluir lançamentos',
-        'Esta operação é irreversível e vai apagar ' + n + ' lançamento' + (n === 1 ? '' : 's') + ' ' + escopoTexto(escopo) + '. Confirma exclusão?',
+        'Excluir lançamento recorrente',
+        'Isso vai excluir a recorrência e apagar ' + n + ' lançamento' + (n === 1 ? '' : 's') + ' futuro' + (n === 1 ? '' : 's') + ' já gerado' + (n === 1 ? '' : 's') + '. Os lançamentos passados serão mantidos. Esta operação é irreversível. Confirma exclusão?',
         'Excluir',
         function(ok){
           if (!ok) return;
-          if (!n) { fecharRecAction(); return; }
-          var batch = writeBatch(db);
-          docs.forEach(function(item){
-            batch.delete(doc(db, "households/" + HOUSEHOLD_ID + "/expenses/" + item.id));
-          });
-          if (escopo === 'todos') {
-            batch.delete(doc(db, "households/" + HOUSEHOLD_ID + "/recurrences/" + recId));
-          }
-          batch.commit().then(function(){
-            fecharRecAction();
-          }).catch(function(err){
-            console.error('Erro ao excluir recorrência:', err);
-          });
-        }
+          executarExclusaoRecorrencia(recId, docsFuturos);
+        },
+        'Cancelar'
       );
+    });
+  }
+
+  function passoExclusaoRecorrencia(msg){
+    recActionTitle.textContent = 'Excluindo…';
+    recActionBody.innerHTML = '<p class="rec-action-summary">' + msg + '</p>';
+  }
+
+  function executarExclusaoRecorrencia(recId, docsFuturos){
+    var total = docsFuturos.length;
+    var lotes = [];
+    for (var i = 0; i < total; i += 450) lotes.push(docsFuturos.slice(i, i + 450));
+    var idx = 0;
+    passoExclusaoRecorrencia(total ? 'Excluindo lançamentos futuros… (0/' + total + ')' : 'Nenhum lançamento futuro a excluir…');
+
+    function proximoLote(){
+      if (idx >= lotes.length) return Promise.resolve();
+      var batch = writeBatch(db);
+      lotes[idx].forEach(function(item){
+        batch.delete(doc(db, "households/" + HOUSEHOLD_ID + "/expenses/" + item.id));
+      });
+      idx++;
+      return batch.commit().then(function(){
+        passoExclusaoRecorrencia('Excluindo lançamentos futuros… (' + Math.min(idx * 450, total) + '/' + total + ')');
+        return proximoLote();
+      });
+    }
+
+    proximoLote().then(function(){
+      passoExclusaoRecorrencia('Excluindo configuração da recorrência…');
+      return deleteDoc(doc(db, "households/" + HOUSEHOLD_ID + "/recurrences/" + recId));
+    }).then(function(){
+      passoExclusaoRecorrencia('Atualizando lista…');
+      fecharRecAction();
+    }).catch(function(err){
+      console.error('Erro ao excluir recorrência:', err);
+      passoExclusaoRecorrencia('Erro ao excluir: ' + (err.message || err.code || err));
     });
   }
 
@@ -2891,7 +2929,7 @@
 </script>
 <script>
   // Sincronizar com CACHE_VERSION em service-worker.js a cada nova versão.
-  var APP_VERSION = "1.9.0";
+  var APP_VERSION = "1.10.0";
   document.title = 'Despesas de Casa · v' + APP_VERSION;
   document.getElementById('versionTag').textContent = 'v' + APP_VERSION;
 
