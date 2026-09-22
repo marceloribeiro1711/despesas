@@ -219,6 +219,10 @@
   }
   .desc-input::placeholder{ color: var(--ink-soft); }
   .desc-input:focus{ outline: none; border-color: var(--border-strong); }
+  .app.payer-luciana #descInput.filled{ background: var(--luciana); border-color: var(--luciana); color: #fff; }
+  .app.payer-luciana #descInput.filled::placeholder{ color: rgba(255,255,255,0.75); }
+  .app.payer-marcelo #descInput.filled{ background: var(--marcelo); border-color: var(--marcelo); color: #fff; }
+  .app.payer-marcelo #descInput.filled::placeholder{ color: rgba(255,255,255,0.75); }
 
   .desc-suggestions{
     display: none;
@@ -240,12 +244,16 @@
 
   /* Date strip */
   .date-strip{
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    gap: 4px;
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 5px;
     margin-bottom: 4px;
+    scrollbar-width: none;
   }
+  .date-strip::-webkit-scrollbar{ display: none; }
   .date-btn{
+    flex: 0 0 38px;
     min-width: 0;
     padding: 6px 2px;
     border-radius: 9px;
@@ -255,6 +263,7 @@
     text-align: center;
     cursor: pointer;
   }
+  .date-btn.calendar{ flex: 0 0 44px; }
   .date-btn .dow{ display:block; font-size: 9px; color: var(--ink-soft); text-transform: lowercase; }
   .date-btn .dnum{ display:block; font-size: 12.5px; font-weight: 600; margin-top: 1px; }
   .date-btn.active{
@@ -1245,6 +1254,7 @@
       chip.textContent = desc;
       chip.addEventListener('click', function(){
         descInput.value = desc;
+        descInput.classList.add('filled');
         validarFormPrincipal();
       });
       descSuggestions.appendChild(chip);
@@ -1286,7 +1296,7 @@
   var today = new Date();
   window.selectedDateIso = toIso(today);
 
-  for (var i = 6; i >= 0; i--) {
+  for (var i = 19; i >= 0; i--) {
     (function(i){
       var d = new Date(today);
       d.setDate(today.getDate() - i);
@@ -1326,6 +1336,8 @@
     validarFormPrincipal();
   });
   dateStrip.appendChild(calBtn);
+  // Mostra "hoje" (a data mais recente, à direita) visível sem precisar rolar.
+  requestAnimationFrame(function(){ dateStrip.scrollLeft = dateStrip.scrollWidth; });
 
   // ---- Teclado numérico compartilhado entre "novo lançamento", "edição" e "recorrência" ----
   var amountEl = document.getElementById('amountValue');
@@ -1412,7 +1424,10 @@
     setTimeout(function(){ descInput.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 250);
   });
   descInput.addEventListener('blur', function(){ footerBar.style.display = ''; });
-  descInput.addEventListener('input', function(){ validarFormPrincipal(); });
+  descInput.addEventListener('input', function(){
+    descInput.classList.toggle('filled', descInput.value.trim().length > 0);
+    validarFormPrincipal();
+  });
 
   function validarFormPrincipal(){
     var payerOk = !!document.querySelector('#payerStack .payer-chip.active');
@@ -1465,6 +1480,7 @@
     cents = 0;
     renderAmount();
     descInput.value = '';
+    descInput.classList.remove('filled');
     document.querySelectorAll('#payerStack .payer-chip').forEach(function(x){ x.classList.remove('active'); });
     document.getElementById('appRoot').classList.remove('payer-luciana', 'payer-marcelo');
     catGrid.querySelectorAll('.cat-btn').forEach(function(x){ x.classList.remove('active'); });
@@ -2049,8 +2065,9 @@
     var now = new Date();
     allExpensesCache.forEach(function(item){
       var d = item.data;
-      if (!d.criado_em || !d.pagador) return; // aguardando confirmação do servidor
-      var dt = d.criado_em.toDate();
+      if (!d.data_despesa || !d.pagador) return; // sem data da despesa, ignora
+      var dt = new Date(d.data_despesa + 'T00:00:00');
+      if (isNaN(dt.getTime())) return;
       if (dt > now) return; // gráficos consideram só lançamentos até hoje, nunca futuros
       var key = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0');
       if (totals[key]) totals[key][d.pagador] = (totals[key][d.pagador] || 0) + (d.valorCents || 0);
@@ -2084,8 +2101,9 @@
     var filtro = window.getAlteracaoFiltro ? window.getAlteracaoFiltro() : { pagador: null, categoria: null };
     var linhas = allExpensesCache.filter(function(item){
       var d = item.data;
-      if (!d.criado_em) return false;
-      var dt = d.criado_em.toDate();
+      if (!d.data_despesa) return false;
+      var dt = new Date(d.data_despesa + 'T00:00:00');
+      if (isNaN(dt.getTime())) return false;
       if (dt.getFullYear() !== y || dt.getMonth() !== m) return false;
       if (filtro.pagador && d.pagador !== filtro.pagador) return false;
       if (filtro.categoria && d.categoria !== filtro.categoria) return false;
@@ -2100,7 +2118,7 @@
     }
     linhas.forEach(function(item){
       var d = item.data;
-      var dt = d.criado_em.toDate();
+      var dt = new Date(d.data_despesa + 'T00:00:00');
       var dia = String(dt.getDate()).padStart(2, '0');
       var valor = ((d.valorCents || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
       var catTexto = d.categoriaLabel || d.categoria;
@@ -2330,6 +2348,66 @@
     });
   }
 
+  // A importação (de backup nosso ou de outro app) só traz lançamentos avulsos,
+  // nunca a configuração das recorrências. Depois de importar, completa qualquer
+  // data futura (hoje em diante) de cada recorrência cadastrada que ainda não
+  // exista entre os lançamentos gravados, comparando por recorrenciaId + data.
+  function reconciliarRecorrenciasFuturas(){
+    var recRef = collection(db, "households/" + HOUSEHOLD_ID + "/recurrences");
+    var expRef = collection(db, "households/" + HOUSEHOLD_ID + "/expenses");
+    return getDocs(recRef).then(function(recSnap){
+      var recorrencias = [];
+      recSnap.forEach(function(d){ recorrencias.push({ id: d.id, data: d.data() }); });
+      if (!recorrencias.length) return 0;
+
+      return getDocs(expRef).then(function(expSnap){
+        var existentes = {};
+        expSnap.forEach(function(d){
+          var dd = d.data();
+          if (dd.recorrenciaId && dd.data_despesa) existentes[dd.recorrenciaId + '|' + dd.data_despesa] = true;
+        });
+
+        var hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        var novos = [];
+        recorrencias.forEach(function(rec){
+          var d = rec.data;
+          if (!d.data_inicio || !d.data_fim) return;
+          gerarDatasRecorrencia(d.data_inicio, d.data_fim).forEach(function(dt){
+            if (dt < hoje) return; // só completa o que falta para o futuro (hoje em diante)
+            var iso = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+            var chave = rec.id + '|' + iso;
+            if (existentes[chave]) return;
+            existentes[chave] = true;
+            novos.push({
+              pagador: d.pagador,
+              categoria: d.categoria,
+              categoriaLabel: d.categoriaLabel,
+              descricao: d.descricao || '',
+              valorCents: d.valorCents || 0,
+              data_despesa: iso,
+              criado_em: serverTimestamp(),
+              recorrenciaId: rec.id
+            });
+          });
+        });
+
+        if (!novos.length) return 0;
+        var lotes = [];
+        for (var i = 0; i < novos.length; i += 450) lotes.push(novos.slice(i, i + 450));
+        var idx = 0;
+        function proximoLote(){
+          if (idx >= lotes.length) return novos.length;
+          var batch = writeBatch(db);
+          lotes[idx].forEach(function(item){ batch.set(doc(expRef), item); });
+          idx++;
+          return batch.commit().then(proximoLote);
+        }
+        return proximoLote();
+      });
+    });
+  }
+
   document.getElementById('importConfirmBtn').addEventListener('click', function(){
     var rows = window.importedRows || [];
     if (!rows.length) return;
@@ -2343,24 +2421,42 @@
       for (var i = 0; i < rows.length; i += 450) lotes.push(rows.slice(i, i + 450));
       var loteAtual = 0;
 
-      function processarLote(){
-        if (loteAtual >= lotes.length) {
+      function finalizarComReconciliacao(){
+        btn.textContent = 'Conferindo recorrências…';
+        reconciliarRecorrenciasFuturas().then(function(qtdGeradas){
           document.getElementById('importSummary').innerHTML =
             '<div class="import-block"><h3>Importação concluída ✓</h3><div class="import-row"><span>' +
             (apagouTudo ? 'Dados anteriores apagados' : 'Importação adicionada aos dados existentes') +
-            '</span></div><div class="import-row"><span>Lançamentos gravados</span><span class="n">' + rows.length + '</span></div></div>';
+            '</span></div><div class="import-row"><span>Lançamentos gravados</span><span class="n">' + rows.length + '</span></div>' +
+            '<div class="import-row"><span>Lançamentos futuros de recorrências completados</span><span class="n">' + qtdGeradas + '</span></div></div>';
           document.getElementById('importFooter').style.display = 'none';
           btn.disabled = false;
           btn.textContent = 'Confirmar importação';
           window.importedRows = [];
+        }).catch(function(err){
+          console.error('Erro ao completar recorrências futuras:', err);
+          document.getElementById('importSummary').innerHTML =
+            '<div class="import-block"><h3>Importação concluída ✓</h3><div class="import-row"><span>' +
+            (apagouTudo ? 'Dados anteriores apagados' : 'Importação adicionada aos dados existentes') +
+            '</span></div><div class="import-row"><span>Lançamentos gravados</span><span class="n">' + rows.length + '</span></div></div>' +
+            '<div class="import-warning">Não consegui conferir/completar as recorrências futuras: ' + (err.message || err.code || err) + '</div>';
+          document.getElementById('importFooter').style.display = 'none';
+          btn.disabled = false;
+          btn.textContent = 'Confirmar importação';
+          window.importedRows = [];
+        });
+      }
+
+      function processarLote(){
+        if (loteAtual >= lotes.length) {
+          finalizarComReconciliacao();
           return;
         }
         try {
           var batch = writeBatch(db);
           lotes[loteAtual].forEach(function(item){
-            // Na importação, a data de inclusão (criado_em) é igual à data da despesa.
-            var dt = new Date((item.dataIso || '1970-01-01') + 'T00:00:00');
-            if (isNaN(dt.getTime())) dt = new Date();
+            // A data de inclusão (criado_em) é o momento real da importação;
+            // a data da despesa em si fica em data_despesa.
             batch.set(doc(ref), {
               pagador: item.pagador || 'LUCIANA',
               categoria: item.categoria || 'outros',
@@ -2368,7 +2464,7 @@
               descricao: item.descricao || '',
               valorCents: item.valorCents || 0,
               data_despesa: item.dataIso || '',
-              criado_em: Timestamp.fromDate(dt)
+              criado_em: serverTimestamp()
             });
           });
         } catch (errSync) {
@@ -2777,7 +2873,7 @@
           descricao: estado.descricao,
           valorCents: estado.valorCents,
           data_despesa: iso,
-          criado_em: Timestamp.fromDate(dt),
+          criado_em: serverTimestamp(),
           recorrenciaId: recDoc.id
         });
       });
@@ -2795,7 +2891,7 @@
 </script>
 <script>
   // Sincronizar com CACHE_VERSION em service-worker.js a cada nova versão.
-  var APP_VERSION = "1.7.0";
+  var APP_VERSION = "1.9.0";
   document.title = 'Despesas de Casa · v' + APP_VERSION;
   document.getElementById('versionTag').textContent = 'v' + APP_VERSION;
 
