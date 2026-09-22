@@ -469,6 +469,14 @@
   .modal-body{ overflow-y: auto; flex: 1; min-height: 0; }
   .modal-close-row{ flex: none; display: flex; justify-content: flex-end; padding-top: 10px; }
 
+  .confirm-message{ font-size: 13.5px; color: var(--ink-soft); line-height: 1.5; margin: 0 0 16px; }
+  .confirm-actions{ display: flex; gap: 10px; flex: none; }
+  .confirm-actions .save-btn{ flex: 1; }
+  .save-btn.secondary{ background: var(--surface-2); color: var(--ink); }
+  .rec-action-list{ display: flex; flex-direction: column; gap: 8px; }
+  .rec-action-list .save-btn{ text-align: left; padding: 13px 16px; }
+  .rec-action-summary{ font-size: 12.5px; color: var(--ink-soft); margin: 0 0 14px; line-height: 1.5; }
+
   /* Tela de histórico */
   .screen{
     position: fixed;
@@ -781,6 +789,7 @@
     gap: 10px;
     padding: 12px 4px;
     border-bottom: 1px solid var(--border);
+    cursor: pointer;
   }
   .rec-item .who{ width: 4px; align-self: stretch; border-radius: 2px; }
   .rec-item .who.LUCIANA{ background: var(--luciana); }
@@ -934,7 +943,7 @@
 <div class="screen" id="historicoScreen">
   <div class="screen-inner">
     <div class="screen-header">
-      <h2>Equilíbrio <span class="version-tag" id="versionTag"></span></h2>
+      <h2>Gráficos <span class="version-tag" id="versionTag"></span></h2>
     </div>
     <div class="screen-body">
       <div class="chart-block">
@@ -1122,6 +1131,25 @@
   </div>
   <div class="modal-close-row">
     <button class="icon-btn" id="closeAlertasBtn" aria-label="Fechar">✕</button>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="confirmBackdrop"></div>
+<div class="modal-card" id="confirmModal">
+  <div class="modal-header"><h3 id="confirmTitle">Confirmar</h3></div>
+  <div class="modal-body"><p class="confirm-message" id="confirmMessage"></p></div>
+  <div class="confirm-actions">
+    <button class="save-btn secondary" id="confirmCancelBtn">Cancelar</button>
+    <button class="save-btn danger" id="confirmOkBtn">Confirmar</button>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="recActionBackdrop"></div>
+<div class="modal-card" id="recActionModal">
+  <div class="modal-header"><h3 id="recActionTitle">Lançamento recorrente</h3></div>
+  <div class="modal-body" id="recActionBody"></div>
+  <div class="modal-close-row">
+    <button class="icon-btn" id="closeRecActionBtn" aria-label="Fechar">✕</button>
   </div>
 </div>
 
@@ -1567,7 +1595,6 @@
     if (window.renderAlteracaoTable) window.renderAlteracaoTable();
   });
   document.getElementById('nextMonthBtn').addEventListener('click', function(){
-    if (monthOffset >= 0) return;
     monthOffset += 1;
     if (window.renderAlteracaoTable) window.renderAlteracaoTable();
   });
@@ -1785,7 +1812,7 @@
   import {
     getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, serverTimestamp,
     onSnapshot, query, where, orderBy, limit, enableIndexedDbPersistence,
-    writeBatch, Timestamp
+    writeBatch, Timestamp, getDocs
   } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
   import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 
@@ -2010,6 +2037,7 @@
       var d = item.data;
       if (!d.criado_em || !d.pagador) return; // aguardando confirmação do servidor
       var dt = d.criado_em.toDate();
+      if (dt > now) return; // gráficos consideram só lançamentos até hoje, nunca futuros
       var key = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0');
       if (totals[key]) totals[key][d.pagador] = (totals[key][d.pagador] || 0) + (d.valorCents || 0);
       if (itemDentroDoPeriodoDonut(dt, now)) {
@@ -2142,6 +2170,34 @@
   document.getElementById('closeAlertasBtn').addEventListener('click', fecharAlertas);
   alertasBackdrop.addEventListener('click', fecharAlertas);
 
+  // ---- Modal de confirmação genérico (substitui o confirm() nativo do navegador) ----
+  var confirmBackdrop = document.getElementById('confirmBackdrop');
+  var confirmModal = document.getElementById('confirmModal');
+  var confirmTitle = document.getElementById('confirmTitle');
+  var confirmMessage = document.getElementById('confirmMessage');
+  var confirmOkBtn = document.getElementById('confirmOkBtn');
+  var confirmCancelBtn = document.getElementById('confirmCancelBtn');
+
+  function pedirConfirmacao(titulo, mensagem, textoConfirmar, cb){
+    confirmTitle.textContent = titulo;
+    confirmMessage.textContent = mensagem;
+    confirmOkBtn.textContent = textoConfirmar || 'Confirmar';
+    confirmModal.classList.add('open');
+    confirmBackdrop.classList.add('open');
+    function limpar(){
+      confirmModal.classList.remove('open');
+      confirmBackdrop.classList.remove('open');
+      confirmOkBtn.removeEventListener('click', onOk);
+      confirmCancelBtn.removeEventListener('click', onCancel);
+      confirmBackdrop.removeEventListener('click', onCancel);
+    }
+    function onOk(){ limpar(); cb(true); }
+    function onCancel(){ limpar(); cb(false); }
+    confirmOkBtn.addEventListener('click', onOk);
+    confirmCancelBtn.addEventListener('click', onCancel);
+    confirmBackdrop.addEventListener('click', onCancel);
+  }
+
   saveBtn.addEventListener('click', function(){
     var estado = window.getFormState();
     if (!estado.pagador) {
@@ -2218,11 +2274,13 @@
   deleteBtn.addEventListener('click', function(){
     var id = window.getEditingId();
     if (!id) return;
-    if (!confirm("Excluir este lançamento? Essa ação não pode ser desfeita.")) return;
-    deleteDoc(doc(db, "households/" + HOUSEHOLD_ID + "/expenses/" + id)).then(function(){
-      window.closeEditScreen();
-    }).catch(function(err){
-      console.error("Erro ao excluir:", err);
+    pedirConfirmacao('Excluir lançamento', 'Confirma exclusão deste lançamento? Essa ação não pode ser desfeita.', 'Excluir', function(ok){
+      if (!ok) return;
+      deleteDoc(doc(db, "households/" + HOUSEHOLD_ID + "/expenses/" + id)).then(function(){
+        window.closeEditScreen();
+      }).catch(function(err){
+        console.error("Erro ao excluir:", err);
+      });
     });
   });
 
@@ -2338,12 +2396,172 @@
           '<span><span class="cat">' + catTexto + (d.descricao ? ' · ' + d.descricao : '') + '</span>' +
           '<div class="periodo">' + formatarDataCurta(d.data_inicio) + ' a ' + formatarDataCurta(d.data_fim) + '</div></span>' +
           '<span class="val">€ ' + valor + '</span>';
+        row.addEventListener('click', function(){
+          abrirRecAction(doc.id, d);
+        });
         body.appendChild(row);
       });
     }, function(err){
       console.error('Erro ao carregar recorrências:', err);
     });
   };
+
+  // ---- Alterar/excluir lançamentos de uma recorrência, por escopo (passado/futuro/todos) ----
+  var recActionBackdrop = document.getElementById('recActionBackdrop');
+  var recActionModal = document.getElementById('recActionModal');
+  var recActionTitle = document.getElementById('recActionTitle');
+  var recActionBody = document.getElementById('recActionBody');
+
+  function fecharRecAction(){
+    recActionModal.classList.remove('open');
+    recActionBackdrop.classList.remove('open');
+  }
+  document.getElementById('closeRecActionBtn').addEventListener('click', fecharRecAction);
+  recActionBackdrop.addEventListener('click', fecharRecAction);
+
+  function contarExpensesPorEscopo(recId, escopo){
+    var ref = collection(db, "households/" + HOUSEHOLD_ID + "/expenses");
+    var q = query(ref, where("recorrenciaId", "==", recId));
+    return getDocs(q).then(function(snap){
+      var hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      var docs = [];
+      snap.forEach(function(docSnap){
+        var dd = docSnap.data();
+        var dt = new Date((dd.data_despesa || '1970-01-01') + 'T00:00:00');
+        var futuro = dt > hoje;
+        if (escopo === 'todos' || (escopo === 'futuro' && futuro) || (escopo === 'passado' && !futuro)) {
+          docs.push({ id: docSnap.id, data: dd });
+        }
+      });
+      return docs;
+    });
+  }
+
+  function escopoTexto(escopo){
+    return escopo === 'passado' ? 'do passado' : (escopo === 'futuro' ? 'do futuro' : 'no total (passados e futuros)');
+  }
+
+  function abrirRecAction(recId, d){
+    var catTexto = d.categoriaLabel || d.categoria;
+    var valor = ((d.valorCents || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+    recActionTitle.textContent = catTexto;
+    recActionBody.innerHTML =
+      '<p class="rec-action-summary">' + d.pagador + ' · € ' + valor + (d.descricao ? ' · ' + d.descricao : '') +
+      '<br>Período: ' + formatarDataCurta(d.data_inicio) + ' a ' + formatarDataCurta(d.data_fim) + '</p>' +
+      '<div class="rec-action-list">' +
+        '<button class="save-btn secondary" id="recActionEditBtn">Alterar valor / descrição / categoria</button>' +
+        '<button class="save-btn danger" id="recActionDeleteBtn">Excluir lançamentos</button>' +
+      '</div>';
+    recActionModal.classList.add('open');
+    recActionBackdrop.classList.add('open');
+    document.getElementById('recActionEditBtn').addEventListener('click', function(){
+      escolherEscopo(recId, d, 'editar');
+    });
+    document.getElementById('recActionDeleteBtn').addEventListener('click', function(){
+      escolherEscopo(recId, d, 'excluir');
+    });
+  }
+
+  function escolherEscopo(recId, d, acao){
+    recActionTitle.textContent = acao === 'editar' ? 'Alterar quais lançamentos?' : 'Excluir quais lançamentos?';
+    recActionBody.innerHTML =
+      '<p class="rec-action-summary">Escolha o alcance da operação.</p>' +
+      '<div class="rec-action-list">' +
+        '<button class="save-btn secondary" data-escopo="passado">Só os do passado</button>' +
+        '<button class="save-btn secondary" data-escopo="futuro">Só os do futuro</button>' +
+        '<button class="save-btn secondary" data-escopo="todos">Todos</button>' +
+      '</div>';
+    recActionBody.querySelectorAll('[data-escopo]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if (acao === 'editar') abrirFormEdicaoRecorrencia(recId, d, btn.dataset.escopo);
+        else confirmarExclusaoRecorrencia(recId, btn.dataset.escopo);
+      });
+    });
+  }
+
+  function confirmarExclusaoRecorrencia(recId, escopo){
+    contarExpensesPorEscopo(recId, escopo).then(function(docs){
+      var n = docs.length;
+      pedirConfirmacao(
+        'Excluir lançamentos',
+        'Esta operação é irreversível e vai apagar ' + n + ' lançamento' + (n === 1 ? '' : 's') + ' ' + escopoTexto(escopo) + '. Confirma exclusão?',
+        'Excluir',
+        function(ok){
+          if (!ok) return;
+          if (!n) { fecharRecAction(); return; }
+          var batch = writeBatch(db);
+          docs.forEach(function(item){
+            batch.delete(doc(db, "households/" + HOUSEHOLD_ID + "/expenses/" + item.id));
+          });
+          if (escopo === 'todos') {
+            batch.delete(doc(db, "households/" + HOUSEHOLD_ID + "/recurrences/" + recId));
+          }
+          batch.commit().then(function(){
+            fecharRecAction();
+          }).catch(function(err){
+            console.error('Erro ao excluir recorrência:', err);
+          });
+        }
+      );
+    });
+  }
+
+  function abrirFormEdicaoRecorrencia(recId, d, escopo){
+    recActionTitle.textContent = 'Alterar lançamentos';
+    var opcoesCategoria = CATEGORIAS.map(function(c){
+      return '<option value="' + c.key + '"' + (c.key === d.categoria ? ' selected' : '') + '>' + c.label + '</option>';
+    }).join('');
+    recActionBody.innerHTML =
+      '<p class="rec-action-summary">Novos dados para os lançamentos ' + escopoTexto(escopo) + '.</p>' +
+      '<input type="text" class="desc-input" id="recEditValor" placeholder="Valor (ex: 45,90)" value="' + ((d.valorCents || 0) / 100).toFixed(2).replace('.', ',') + '">' +
+      '<input type="text" class="desc-input" id="recEditDescricao" placeholder="Descrição" value="' + (d.descricao || '').replace(/"/g, '&quot;') + '">' +
+      '<select class="desc-input" id="recEditCategoria">' + opcoesCategoria + '</select>' +
+      '<button class="save-btn" id="recEditSalvarBtn">Salvar alteração</button>';
+    document.getElementById('recEditSalvarBtn').addEventListener('click', function(){
+      var valorTxt = document.getElementById('recEditValor').value.replace(/\./g, '').replace(',', '.');
+      var novoValor = Math.round(parseFloat(valorTxt) * 100);
+      if (!novoValor || isNaN(novoValor) || novoValor <= 0) return;
+      var novaDescricao = document.getElementById('recEditDescricao').value.trim();
+      var catSelect = document.getElementById('recEditCategoria');
+      var novaCategoria = catSelect.value;
+      var novaCategoriaLabel = catSelect.options[catSelect.selectedIndex].textContent;
+      contarExpensesPorEscopo(recId, escopo).then(function(docs){
+        var n = docs.length;
+        pedirConfirmacao(
+          'Alterar lançamentos',
+          'Esta operação é irreversível e vai alterar ' + n + ' lançamento' + (n === 1 ? '' : 's') + ' ' + escopoTexto(escopo) + '. Confirma?',
+          'Confirmar',
+          function(ok){
+            if (!ok) return;
+            if (!n) { fecharRecAction(); return; }
+            var batch = writeBatch(db);
+            docs.forEach(function(item){
+              batch.update(doc(db, "households/" + HOUSEHOLD_ID + "/expenses/" + item.id), {
+                valorCents: novoValor,
+                descricao: novaDescricao,
+                categoria: novaCategoria,
+                categoriaLabel: novaCategoriaLabel
+              });
+            });
+            if (escopo === 'todos') {
+              batch.update(doc(db, "households/" + HOUSEHOLD_ID + "/recurrences/" + recId), {
+                valorCents: novoValor,
+                descricao: novaDescricao,
+                categoria: novaCategoria,
+                categoriaLabel: novaCategoriaLabel
+              });
+            }
+            batch.commit().then(function(){
+              fecharRecAction();
+            }).catch(function(err){
+              console.error('Erro ao alterar recorrência:', err);
+            });
+          }
+        );
+      });
+    });
+  }
 
   document.getElementById('saveRecorrenciaBtn').addEventListener('click', function(){
     var estado = window.getRecorrenciaFormState();
@@ -2395,7 +2613,7 @@
 </script>
 <script>
   // Sincronizar com CACHE_VERSION em service-worker.js a cada nova versão.
-  var APP_VERSION = "1.4.2";
+  var APP_VERSION = "1.5.0";
   document.title = 'Despesas de Casa · v' + APP_VERSION;
   document.getElementById('versionTag').textContent = 'v' + APP_VERSION;
 
