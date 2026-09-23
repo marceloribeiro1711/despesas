@@ -567,7 +567,7 @@
     display: flex;
     align-items: flex-end;
     justify-content: space-around;
-    gap: 8px;
+    gap: 3px;
     min-height: 0;
   }
   .bar-month{
@@ -583,11 +583,11 @@
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    gap: 10px;
+    gap: 3px;
     width: 100%;
   }
   .bar-col{ position: relative; height: 100%; display: flex; align-items: flex-end; }
-  .bar{ width: 16px; border-radius: 4px 4px 0 0; min-height: 2px; }
+  .bar{ width: 13px; border-radius: 4px 4px 0 0; min-height: 2px; }
   .bar.luciana{ background: var(--luciana); }
   .bar.marcelo{ background: var(--marcelo); }
   .bar-val{
@@ -595,12 +595,12 @@
     left: 50%;
     transform: translate(-50%, -100%);
     margin-top: -3px;
-    font-size: 9px;
+    font-size: 8px;
     font-weight: 700;
     color: var(--ink);
     white-space: nowrap;
   }
-  .bar-month-label{ font-size: 10px; color: var(--ink-soft); margin-top: 6px; flex: none; }
+  .bar-month-label{ font-size: 9px; color: var(--ink-soft); margin-top: 6px; flex: none; }
   .chart-legend{
     flex: none;
     display: flex;
@@ -957,7 +957,7 @@
     </div>
     <div class="screen-body">
       <div class="chart-block">
-        <div class="chart-title">Despesa mensal (últimos 4 meses)</div>
+        <div class="chart-title">Despesa mensal (últimos 6 meses)</div>
         <div class="bar-chart" id="barChart"></div>
         <div class="chart-legend">
           <span class="legend-item"><span class="legend-dot luciana"></span>Luciana</span>
@@ -1994,6 +1994,12 @@
     return arr;
   }
 
+  function formatarValorBarra(cents){
+    var euros = cents / 100;
+    if (euros >= 1000) return '€' + (euros / 1000).toFixed(2).replace('.', ',') + 'k';
+    return '€' + Math.round(euros);
+  }
+
   function renderBarChart(meses, totals){
     var barChart = document.getElementById('barChart');
     barChart.innerHTML = '';
@@ -2006,8 +2012,8 @@
       var t = totals[m.key];
       var pL = Math.round((t.LUCIANA / max) * 80);
       var pM = Math.round((t.MARCELO / max) * 80);
-      var valL = '€' + Math.round(t.LUCIANA / 100);
-      var valM = '€' + Math.round(t.MARCELO / 100);
+      var valL = formatarValorBarra(t.LUCIANA);
+      var valM = formatarValorBarra(t.MARCELO);
       var col = document.createElement('div');
       col.className = 'bar-month';
       col.innerHTML =
@@ -2117,7 +2123,7 @@
   }
 
   function renderHistorico(){
-    var meses = ultimosMeses(4);
+    var meses = ultimosMeses(6);
     var totals = {};
     meses.forEach(function(m){ totals[m.key] = { LUCIANA: 0, MARCELO: 0 }; });
     var overallPeriodo = { LUCIANA: 0, MARCELO: 0 };
@@ -2996,7 +3002,7 @@
 </script>
 <script>
   // Sincronizar com CACHE_VERSION em service-worker.js a cada nova versão.
-  var APP_VERSION = "1.12.0";
+  var APP_VERSION = "1.13.1";
   document.title = 'Despesas de Casa · v' + APP_VERSION;
   document.getElementById('versionTag').textContent = 'v' + APP_VERSION;
 
