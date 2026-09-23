@@ -567,7 +567,7 @@
     display: flex;
     align-items: flex-end;
     justify-content: space-around;
-    gap: 3px;
+    gap: 5px;
     min-height: 0;
   }
   .bar-month{
@@ -583,11 +583,11 @@
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    gap: 3px;
+    gap: 7px;
     width: 100%;
   }
   .bar-col{ position: relative; height: 100%; display: flex; align-items: flex-end; }
-  .bar{ width: 13px; border-radius: 4px 4px 0 0; min-height: 2px; }
+  .bar{ width: 16px; border-radius: 4px 4px 0 0; min-height: 2px; }
   .bar.luciana{ background: var(--luciana); }
   .bar.marcelo{ background: var(--marcelo); }
   .bar-val{
@@ -595,7 +595,7 @@
     left: 50%;
     transform: translate(-50%, -100%);
     margin-top: -3px;
-    font-size: 8px;
+    font-size: 10px;
     font-weight: 700;
     color: var(--ink);
     white-space: nowrap;
@@ -957,7 +957,7 @@
     </div>
     <div class="screen-body">
       <div class="chart-block">
-        <div class="chart-title">Despesa mensal (últimos 6 meses)</div>
+        <div class="chart-title">Despesa mensal (últimos 5 meses)</div>
         <div class="bar-chart" id="barChart"></div>
         <div class="chart-legend">
           <span class="legend-item"><span class="legend-dot luciana"></span>Luciana</span>
@@ -1936,7 +1936,7 @@
   function formatDataCurta(iso){
     if (!iso) return '';
     var p = iso.split('-');
-    return p[2] + '/' + p[1];
+    return p[2] + '/' + p[1] + '/' + p[0].slice(2);
   }
 
   function renderRecentColuna(containerId, itens){
@@ -1964,11 +1964,17 @@
   // não pela data da despesa escolhida pelo usuário.
   function escutarUltimosLancamentos(){
     var ref = collection(db, "households/" + HOUSEHOLD_ID + "/expenses");
-    var q = query(ref, orderBy('criado_em', 'desc'), limit(40));
+    var q = query(ref, orderBy('criado_em', 'desc'), limit(120));
     onSnapshot(q, function(snapshot){
+      var fimDeHoje = new Date();
+      fimDeHoje.setHours(23, 59, 59, 999);
       var luciana = [], marcelo = [];
       snapshot.forEach(function(doc){
         var d = doc.data();
+        if (d.data_despesa) {
+          var dt = new Date(d.data_despesa + 'T12:00:00');
+          if (!isNaN(dt.getTime()) && dt > fimDeHoje) return; // não mostra lançamento futuro (recorrência)
+        }
         if (d.pagador === 'MARCELO') { if (marcelo.length < 5) marcelo.push(d); }
         else { if (luciana.length < 5) luciana.push(d); }
       });
@@ -2123,7 +2129,7 @@
   }
 
   function renderHistorico(){
-    var meses = ultimosMeses(6);
+    var meses = ultimosMeses(5);
     var totals = {};
     meses.forEach(function(m){ totals[m.key] = { LUCIANA: 0, MARCELO: 0 }; });
     var overallPeriodo = { LUCIANA: 0, MARCELO: 0 };
@@ -3002,7 +3008,7 @@
 </script>
 <script>
   // Sincronizar com CACHE_VERSION em service-worker.js a cada nova versão.
-  var APP_VERSION = "1.13.1";
+  var APP_VERSION = "1.14.0";
   document.title = 'Despesas de Casa · v' + APP_VERSION;
   document.getElementById('versionTag').textContent = 'v' + APP_VERSION;
 
