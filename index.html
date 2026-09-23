@@ -1561,6 +1561,65 @@
     });
   });
 
+  // ---- Navegação em carrossel: deslizar para o lado troca de aba, como nos apps do mercado ----
+  // Tocar nos ícones do menu continua funcionando normalmente (opção alternativa).
+  (function(){
+    var ORDEM_ABAS = ['inicio', 'graficos', 'historico', 'manutencao', 'alertas'];
+    var toqueInicial = null;
+
+    function elementoRolaHorizontal(el){
+      while (el && el !== document.body) {
+        if (el.scrollWidth > el.clientWidth + 2) {
+          var estilo = window.getComputedStyle(el);
+          if (estilo.overflowX === 'auto' || estilo.overflowX === 'scroll') return true;
+        }
+        el = el.parentElement;
+      }
+      return false;
+    }
+
+    function telaSecundariaAberta(){
+      if (editScreen.classList.contains('open')) return true;
+      if (recorrenciaFormScreen.classList.contains('open')) return true;
+      if (recorrenciaListScreen.classList.contains('open')) return true;
+      if (document.querySelector('.modal-card.open')) return true;
+      var sheet = document.getElementById('keypadSheet');
+      if (sheet && sheet.classList.contains('open')) return true;
+      return false;
+    }
+
+    function abaAtual(){
+      var ativo = tabbar.querySelector('.tab-btn.active');
+      return ativo ? ativo.dataset.tab : 'inicio';
+    }
+
+    document.addEventListener('touchstart', function(e){
+      if (e.touches.length !== 1 || telaSecundariaAberta() || elementoRolaHorizontal(e.target)) {
+        toqueInicial = null;
+        return;
+      }
+      var t = e.touches[0];
+      toqueInicial = { x: t.clientX, y: t.clientY, tempo: Date.now() };
+    }, { passive: true });
+
+    document.addEventListener('touchend', function(e){
+      if (!toqueInicial) return;
+      var t = e.changedTouches[0];
+      var dx = t.clientX - toqueInicial.x;
+      var dy = t.clientY - toqueInicial.y;
+      var dt = Date.now() - toqueInicial.tempo;
+      toqueInicial = null;
+      if (dt > 600) return; // gesto muito lento não conta como swipe
+      if (Math.abs(dx) < 55) return; // distância mínima do gesto
+      if (Math.abs(dx) < Math.abs(dy) * 1.4) return; // precisa ser predominantemente horizontal
+      var idxAtual = ORDEM_ABAS.indexOf(abaAtual());
+      if (idxAtual === -1) return;
+      var novoIdx = dx < 0 ? idxAtual + 1 : idxAtual - 1;
+      if (novoIdx < 0 || novoIdx >= ORDEM_ABAS.length) return;
+      irParaAba(ORDEM_ABAS[novoIdx]);
+    }, { passive: true });
+  })();
+
   window.abrirEdicaoScreen = function(){ editScreen.classList.add('open'); };
   window.fecharEdicaoScreen = function(){ editScreen.classList.remove('open'); };
   document.getElementById('closeEditBtn').addEventListener('click', function(){
@@ -2200,6 +2259,8 @@
   }
 
   window.onAlertasOpen = function(){
+    attachAllExpensesListener();
+    if (allExpensesSubscribers.indexOf(renderAlertasLista) === -1) allExpensesSubscribers.push(renderAlertasLista);
     renderAlertasLista();
     var body = alertasScreen.querySelector('.screen-body');
     if (body) body.scrollTop = 0; // sempre apresenta o topo da lista ao abrir
@@ -2423,6 +2484,8 @@
       var lotes = [];
       for (var i = 0; i < rows.length; i += 450) lotes.push(rows.slice(i, i + 450));
       var loteAtual = 0;
+      var fimDeHoje = new Date();
+      fimDeHoje.setHours(23, 59, 59, 999);
 
       function finalizarComReconciliacao(){
         btn.textContent = 'Conferindo recorrências…';
@@ -2458,8 +2521,12 @@
         try {
           var batch = writeBatch(db);
           lotes[loteAtual].forEach(function(item){
-            // A data de inclusão (criado_em) é o momento real da importação;
-            // a data da despesa em si fica em data_despesa.
+            // "Últimos lançamentos" ordena pela data de inclusão (criado_em). Um lançamento
+            // importado com data igual ou anterior a hoje é histórico, não deve aparecer como
+            // recém-lançado: criado_em usa a própria data da despesa. Só datas futuras (ex.:
+            // recorrências já geradas, incluídas no backup) usam o momento real da importação.
+            var dataItem = item.dataIso ? new Date(item.dataIso + 'T12:00:00') : null;
+            var criadoEmItem = (dataItem && dataItem <= fimDeHoje) ? Timestamp.fromDate(dataItem) : serverTimestamp();
             batch.set(doc(ref), {
               pagador: item.pagador || 'LUCIANA',
               categoria: item.categoria || 'outros',
@@ -2467,7 +2534,7 @@
               descricao: item.descricao || '',
               valorCents: item.valorCents || 0,
               data_despesa: item.dataIso || '',
-              criado_em: serverTimestamp()
+              criado_em: criadoEmItem
             });
           });
         } catch (errSync) {
@@ -2929,7 +2996,7 @@
 </script>
 <script>
   // Sincronizar com CACHE_VERSION em service-worker.js a cada nova versão.
-  var APP_VERSION = "1.10.1";
+  var APP_VERSION = "1.12.0";
   document.title = 'Despesas de Casa · v' + APP_VERSION;
   document.getElementById('versionTag').textContent = 'v' + APP_VERSION;
 
