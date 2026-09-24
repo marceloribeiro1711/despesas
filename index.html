@@ -392,15 +392,15 @@
   .recent-col-name.marcelo{ color: var(--marcelo); }
   .recent-item{
     display: grid;
-    grid-template-columns: 30px 1fr auto;
+    grid-template-columns: 54px 1fr auto;
     align-items: baseline;
-    gap: 5px;
+    gap: 6px;
     padding: 4px 0;
     border-bottom: 1px solid var(--border);
     font-size: 11px;
   }
-  .recent-item .date{ color: var(--ink-soft); font-size: 10px; }
-  .recent-item .cat{ color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .recent-item .date{ color: var(--ink-soft); font-size: 10px; white-space: nowrap; }
+  .recent-item .cat{ color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
   .recent-item .val{ font-variant-numeric: tabular-nums; font-weight: 700; }
   .recent-empty{ font-size: 11px; color: var(--ink-soft); padding: 2px 2px 6px; }
 
@@ -1948,13 +1948,12 @@
     }
     itens.forEach(function(d){
       var valor = ((d.valorCents || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-      var catTexto = d.categoriaLabel || d.categoria;
-      if (d.descricao) catTexto += ' · ' + d.descricao;
+      var descTexto = d.descricao || d.categoriaLabel || d.categoria || '';
       var row = document.createElement('div');
       row.className = 'recent-item';
       row.innerHTML =
         '<span class="date">' + formatDataCurta(d.data_despesa) + '</span>' +
-        '<span class="cat">' + catTexto + '</span>' +
+        '<span class="cat">' + descTexto + '</span>' +
         '<span class="val">€ ' + valor + '</span>';
       el.appendChild(row);
     });
@@ -3008,7 +3007,7 @@
 </script>
 <script>
   // Sincronizar com CACHE_VERSION em service-worker.js a cada nova versão.
-  var APP_VERSION = "1.14.0";
+  var APP_VERSION = "1.15.0";
   document.title = 'Despesas de Casa · v' + APP_VERSION;
   document.getElementById('versionTag').textContent = 'v' + APP_VERSION;
 
