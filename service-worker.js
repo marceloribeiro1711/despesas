@@ -1,5 +1,5 @@
 // Sincronizar este valor com APP_VERSION em index.html a cada nova versão.
-var CACHE_VERSION = 'v1.13.1';
+var CACHE_VERSION = 'v1.15.0';
 var CACHE_NAME = 'despesas-casa-' + CACHE_VERSION;
 
 var APP_SHELL = [
