@@ -1,45 +1,32 @@
 {
-  "id": "https://marceloribeiro1711.github.io/PSC_PRO/",
-  "name": "Padel Coaching Pro",
-  "short_name": "PSC Pro",
-  "description": "Professional padel coaching app with real-time scoreboard, match statistics tracking, and TV landscape mode for live matches. Full version with all features unlocked.",
-  "start_url": "https://marceloribeiro1711.github.io/PSC_PRO/",
-  "scope": "https://marceloribeiro1711.github.io/PSC_PRO/",
-  "display": "fullscreen",
-  "orientation": "any",
-  "background_color": "#0b1a35",
-  "theme_color": "#0b1a35",
-  "lang": "en",
-  "categories": [
-    "sports",
-    "utilities"
-  ],
+  "name": "Despesas de Casa",
+  "short_name": "Despesas",
+  "description": "Controle de despesas domésticas para Luciana e Marcelo",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#EFEDE6",
+  "theme_color": "#1F5C4A",
+  "lang": "pt-BR",
   "icons": [
-    { "src": "icons/icon-72x72.png",   "sizes": "72x72",   "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-96x96.png",   "sizes": "96x96",   "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-128x128.png", "sizes": "128x128", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-144x144.png", "sizes": "144x144", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-152x152.png", "sizes": "152x152", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-384x384.png", "sizes": "384x384", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
-  ],
-  "screenshots": [
-    { "src": "screenshots/screenshot_1.jpg", "sizes": "1220x2337", "type": "image/jpeg", "form_factor": "portrait", "label": "Coaching Stats View" },
-    { "src": "screenshots/screenshot_2.jpg", "sizes": "2476x1118", "type": "image/jpeg", "form_factor": "portrait", "label": "Match in Progress" },
-    { "src": "screenshots/screenshot_3.jpg", "sizes": "1220x2411", "type": "image/jpeg", "form_factor": "portrait", "label": "Break Point & Star Point" },
-    { "src": "screenshots/screenshot_4.jpg", "sizes": "1220x2403", "type": "image/jpeg", "form_factor": "portrait", "label": "Game Config Screen" },
-    { "src": "screenshots/screenshot_5.jpg", "sizes": "1220x2418", "type": "image/jpeg", "form_factor": "portrait", "label": "End of Match" },
-    { "src": "screenshots/screenshot_6.jpg", "sizes": "1220x2428", "type": "image/jpeg", "form_factor": "portrait", "label": "Who's Serving Next" },
-    { "src": "screenshots/screenshot_7.jpg", "sizes": "1220x2395", "type": "image/jpeg", "form_factor": "portrait", "label": "Match History" },
-    { "src": "screenshots/screenshot_8.jpg", "sizes": "1220x2410", "type": "image/jpeg", "form_factor": "portrait", "label": "New Match Setup" },
-    { "src": "screenshots/screenshot_9.jpg", "sizes": "2415x1220", "type": "image/jpeg", "form_factor": "wide", "label": "Landscape TV Scoreboard" }
-  ],
-  "display_override": [
-    "fullscreen",
-    "standalone",
-    "minimal-ui"
-  ],
-  "prefer_related_applications": false
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
 }
