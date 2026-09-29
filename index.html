@@ -578,27 +578,33 @@
     align-items: center;
     justify-content: flex-end;
   }
+  /* Barras sobrepostas: Luciana à esquerda, Marcelo à direita, a mais alta fica atrás */
   .bar-pair{
     flex: 1;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    gap: 7px;
-    width: 100%;
+    position: relative;
+    width: 35px;
   }
-  .bar-col{ position: relative; height: 100%; display: flex; align-items: flex-end; }
-  .bar{ width: 16px; border-radius: 4px 4px 0 0; min-height: 2px; }
-  .bar.luciana{ background: var(--luciana); }
-  .bar.marcelo{ background: var(--marcelo); }
+  .bar{
+    position: absolute;
+    bottom: 0;
+    width: 22px;
+    border-radius: 4px 4px 0 0;
+    min-height: 2px;
+    box-shadow: 0 0 0 1.5px var(--surface);
+  }
+  .bar.luciana{ background: var(--luciana); left: 0; }
+  .bar.marcelo{ background: var(--marcelo); left: 13px; }
+  /* Valor na vertical (lê de baixo para cima), acima do topo de cada barra */
   .bar-val{
     position: absolute;
-    left: 50%;
-    transform: translate(-50%, -100%);
-    margin-top: -3px;
+    writing-mode: vertical-rl;
+    transform: translateX(-50%) rotate(180deg);
+    margin-bottom: 4px;
     font-size: 10px;
     font-weight: 700;
     color: var(--ink);
     white-space: nowrap;
+    z-index: 3;
   }
   .bar-month-label{ font-size: 9px; color: var(--ink-soft); margin-top: 6px; flex: none; }
   .chart-legend{
@@ -2015,16 +2021,21 @@
     });
     meses.forEach(function(m){
       var t = totals[m.key];
-      var pL = Math.round((t.LUCIANA / max) * 80);
-      var pM = Math.round((t.MARCELO / max) * 80);
-      var valL = formatarValorBarra(t.LUCIANA);
-      var valM = formatarValorBarra(t.MARCELO);
+      var pL = Math.round((t.LUCIANA / max) * 72);
+      var pM = Math.round((t.MARCELO / max) * 72);
+      // A barra mais alta fica atrás; a mais baixa, na frente. O valor da barra da frente
+      // é posicionado na faixa livre ao lado da barra de trás, para não ficar sobre ela.
+      var lucianaAtras = t.LUCIANA >= t.MARCELO;
+      var xL = lucianaAtras ? 11 : 6;   // centro do rótulo (px) dentro do par de barras
+      var xM = lucianaAtras ? 29 : 24;
       var col = document.createElement('div');
       col.className = 'bar-month';
       col.innerHTML =
         '<div class="bar-pair">' +
-          '<div class="bar-col">' + (t.LUCIANA > 0 ? '<span class="bar-val" style="bottom:' + pL + '%">' + valL + '</span>' : '') + '<div class="bar luciana" style="height:' + pL + '%"></div></div>' +
-          '<div class="bar-col">' + (t.MARCELO > 0 ? '<span class="bar-val" style="bottom:' + pM + '%">' + valM + '</span>' : '') + '<div class="bar marcelo" style="height:' + pM + '%"></div></div>' +
+          '<div class="bar luciana" style="height:' + pL + '%;z-index:' + (lucianaAtras ? 1 : 2) + '"></div>' +
+          '<div class="bar marcelo" style="height:' + pM + '%;z-index:' + (lucianaAtras ? 2 : 1) + '"></div>' +
+          (t.LUCIANA > 0 ? '<span class="bar-val" style="left:' + xL + 'px;bottom:' + pL + '%">' + formatarValorBarra(t.LUCIANA) + '</span>' : '') +
+          (t.MARCELO > 0 ? '<span class="bar-val" style="left:' + xM + 'px;bottom:' + pM + '%">' + formatarValorBarra(t.MARCELO) + '</span>' : '') +
         '</div>' +
         '<div class="bar-month-label">' + m.label + '</div>';
       barChart.appendChild(col);
@@ -3007,7 +3018,7 @@
 </script>
 <script>
   // Sincronizar com CACHE_VERSION em service-worker.js a cada nova versão.
-  var APP_VERSION = "1.15.0";
+  var APP_VERSION = "1.16.0";
   document.title = 'Despesas de Casa · v' + APP_VERSION;
   document.getElementById('versionTag').textContent = 'v' + APP_VERSION;
 
