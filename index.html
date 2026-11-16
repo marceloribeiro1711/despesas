@@ -778,6 +778,28 @@
   .filter-chip.active.luciana{ background: var(--luciana); border-color: var(--luciana); }
   .filter-chip.active.marcelo{ background: var(--marcelo); border-color: var(--marcelo); }
 
+  .search-row{ flex: none; padding: 8px 16px 8px; border-bottom: 1px solid var(--border); }
+  .search-line{ display: flex; align-items: center; gap: 8px; }
+  .search-label{ flex: none; font-size: 12.5px; font-weight: 600; color: var(--ink-soft); }
+  .search-input{
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 12px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 14px;
+    font-family: inherit;
+  }
+  .search-input::placeholder{ color: var(--ink-soft); }
+  .search-sugg{ display: none; flex-wrap: wrap; gap: 6px; padding-top: 8px; }
+  .search-sugg.open{ display: flex; }
+  .search-sugg .filter-chip{ max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .alt-row.busca{ grid-template-columns: 4px 56px 1fr auto; }
+  .alt-row.busca .alt-day{ font-size: 11px; }
   .alt-table{ padding: 4px 0; }
   .alt-row{
     display: grid;
@@ -1003,6 +1025,13 @@
     </div>
     <div class="filter-strip" id="filterStripPagador"></div>
     <div class="filter-strip" id="filterStripCategoria"></div>
+    <div class="search-row">
+      <div class="search-line">
+        <label class="search-label" for="histSearchInput">Filtrar por:</label>
+        <input type="search" class="search-input" id="histSearchInput" placeholder="Texto da descrição (últimos 100)" autocomplete="off">
+      </div>
+      <div class="search-sugg" id="histSearchSugg"></div>
+    </div>
     <div class="screen-body scrollable">
       <div class="alt-table" id="altTableBody"></div>
     </div>
@@ -2189,6 +2218,63 @@
   // ---- Tela de Alteração: tabela do mês corrente, navegável ----
   var MESES_LONGO = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
+  function normalizarBusca(t){
+    return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  }
+  // Últimas 5 buscas guardadas neste aparelho; sugeridas ao tocar no campo.
+  var histSearchInput = document.getElementById('histSearchInput');
+  var histSearchSugg = document.getElementById('histSearchSugg');
+  var CHAVE_BUSCAS = 'ultimasBuscasHistorico';
+
+  function lerBuscasSalvas(){
+    try {
+      var lista = JSON.parse(localStorage.getItem(CHAVE_BUSCAS) || '[]');
+      return Array.isArray(lista) ? lista.filter(function(t){ return typeof t === 'string' && t; }) : [];
+    } catch (e) { return []; }
+  }
+  function guardarBusca(texto){
+    texto = String(texto || '').trim();
+    if (!texto) return;
+    var chave = normalizarBusca(texto);
+    var lista = lerBuscasSalvas().filter(function(t){ return normalizarBusca(t) !== chave; });
+    lista.unshift(texto);
+    try { localStorage.setItem(CHAVE_BUSCAS, JSON.stringify(lista.slice(0, 5))); } catch (e) {}
+  }
+  function mostrarSugestoesBusca(){
+    var lista = lerBuscasSalvas();
+    histSearchSugg.innerHTML = '';
+    if (!lista.length || histSearchInput.value.trim()) { histSearchSugg.classList.remove('open'); return; }
+    lista.forEach(function(t){
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'filter-chip';
+      chip.textContent = t;
+      chip.addEventListener('click', function(){
+        histSearchInput.value = t;
+        guardarBusca(t);
+        histSearchSugg.classList.remove('open');
+        window.renderAlteracaoTable();
+        document.querySelector('#alteracaoScreen .screen-body').scrollTop = 0;
+      });
+      histSearchSugg.appendChild(chip);
+    });
+    histSearchSugg.classList.add('open');
+  }
+  histSearchInput.addEventListener('focus', mostrarSugestoesBusca);
+  histSearchInput.addEventListener('blur', function(){
+    guardarBusca(histSearchInput.value);
+    // pequeno atraso para o toque numa sugestão ser registrado antes de fechar a lista
+    setTimeout(function(){ histSearchSugg.classList.remove('open'); }, 200);
+  });
+  histSearchInput.addEventListener('keydown', function(e){
+    if (e.key === 'Enter') { guardarBusca(histSearchInput.value); histSearchInput.blur(); }
+  });
+  histSearchInput.addEventListener('input', function(){
+    if (histSearchInput.value.trim()) histSearchSugg.classList.remove('open'); else mostrarSugestoesBusca();
+    window.renderAlteracaoTable();
+    document.querySelector('#alteracaoScreen .screen-body').scrollTop = 0;
+  });
+
   window.renderAlteracaoTable = function(){
     var offset = window.getMonthOffset();
     var now = new Date();
@@ -2197,33 +2283,41 @@
     document.getElementById('monthLabel').textContent = MESES_LONGO[m] + '/' + y;
 
     var filtro = window.getAlteracaoFiltro ? window.getAlteracaoFiltro() : { pagador: null, categoria: null };
+    var textoBusca = normalizarBusca(document.getElementById('histSearchInput').value);
+    var modoBusca = textoBusca.length > 0;
+    document.querySelector('#alteracaoScreen .month-nav').style.display = modoBusca ? 'none' : '';
     var linhas = allExpensesCache.filter(function(item){
       var d = item.data;
       if (!d.data_despesa) return false;
       var dt = new Date(d.data_despesa + 'T00:00:00');
       if (isNaN(dt.getTime())) return false;
-      if (dt.getFullYear() !== y || dt.getMonth() !== m) return false;
+      if (modoBusca) {
+        // Busca: ignora o mês e procura o texto na descrição, em todo o histórico.
+        if (normalizarBusca(d.descricao).indexOf(textoBusca) === -1) return false;
+      } else if (dt.getFullYear() !== y || dt.getMonth() !== m) return false;
       if (filtro.pagador && d.pagador !== filtro.pagador) return false;
       if (filtro.categoria && d.categoria !== filtro.categoria) return false;
       return true;
     });
-    // Ordena da data de pagamento mais recente para a mais antiga dentro do mês.
+    // Ordena da data de pagamento mais recente para a mais antiga.
     linhas.sort(function(a, b){ return (b.data.data_despesa || '').localeCompare(a.data.data_despesa || ''); });
+    if (modoBusca) linhas = linhas.slice(0, 100);
 
     var body = document.getElementById('altTableBody');
     body.innerHTML = '';
     if (linhas.length === 0) {
-      body.innerHTML = '<div class="alt-empty">Nenhum lançamento neste mês.</div>';
+      body.innerHTML = '<div class="alt-empty">' + (modoBusca ? 'Nenhum lançamento encontrado.' : 'Nenhum lançamento neste mês.') + '</div>';
       return;
     }
     linhas.forEach(function(item){
       var d = item.data;
       var dt = new Date(d.data_despesa + 'T00:00:00');
       var dia = String(dt.getDate()).padStart(2, '0');
+      if (modoBusca) dia += '/' + String(dt.getMonth() + 1).padStart(2, '0') + '/' + String(dt.getFullYear()).slice(2);
       var valor = ((d.valorCents || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
       var catTexto = d.categoriaLabel || d.categoria;
       var row = document.createElement('div');
-      row.className = 'alt-row';
+      row.className = 'alt-row' + (modoBusca ? ' busca' : '');
       row.innerHTML =
         '<span class="alt-who ' + d.pagador + '"></span>' +
         '<span class="alt-day">' + dia + '</span>' +
@@ -2244,6 +2338,8 @@
     });
     filterStripPagador.querySelector('.filter-chip').classList.add('active'); // "Todos"
     filterStripCategoria.querySelectorAll('.filter-chip').forEach(function(x){ x.classList.remove('active'); });
+    document.getElementById('histSearchInput').value = '';
+    document.getElementById('histSearchSugg').classList.remove('open');
     attachAllExpensesListener();
     if (allExpensesSubscribers.indexOf(window.renderAlteracaoTable) === -1) allExpensesSubscribers.push(window.renderAlteracaoTable);
     window.renderAlteracaoTable();
@@ -3038,7 +3134,7 @@
 </script>
 <script>
   // Sincronizar com CACHE_VERSION em service-worker.js a cada nova versão.
-  var APP_VERSION = "1.17.0";
+  var APP_VERSION = "1.19.1";
   document.title = 'Despesas de Casa · v' + APP_VERSION;
   document.getElementById('versionTag').textContent = 'v' + APP_VERSION;
 
