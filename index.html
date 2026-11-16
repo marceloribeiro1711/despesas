@@ -1288,6 +1288,20 @@
   attachPayerToggle(document.getElementById('editPayerStack'));
   attachPayerToggle(document.getElementById('recPayerStack'), function(){ validarFormRecorrencia(); });
 
+  // Pagador padrão: o do último lançamento salvo neste aparelho (cada um usa o seu celular).
+  function aplicarPagadorPadrao(){
+    var ultimo = null;
+    try { ultimo = localStorage.getItem('ultimoPagador'); } catch (e) {}
+    if (ultimo !== 'LUCIANA' && ultimo !== 'MARCELO') return;
+    var chip = document.querySelector('#payerStack .payer-chip[data-payer="' + ultimo + '"]');
+    if (!chip) return;
+    document.querySelectorAll('#payerStack .payer-chip').forEach(function(x){ x.classList.remove('active'); });
+    chip.classList.add('active');
+    var appRoot = document.getElementById('appRoot');
+    appRoot.classList.remove('payer-luciana', 'payer-marcelo');
+    appRoot.classList.add(ultimo === 'LUCIANA' ? 'payer-luciana' : 'payer-marcelo');
+  }
+
   function toIso(d){
     var y = d.getFullYear();
     var m = String(d.getMonth() + 1).padStart(2, '0');
@@ -1492,6 +1506,7 @@
     calBtn.innerHTML = ICONS.calendario;
     window.selectedDateIso = null;
     renderDescSuggestions(null);
+    aplicarPagadorPadrao();
     validarFormPrincipal();
   };
   window.getRecorrenciaFormState = function(){
@@ -1507,6 +1522,7 @@
       dataFim: document.getElementById('recDataFim').value
     };
   };
+  aplicarPagadorPadrao();
   validarFormPrincipal();
 
   // ---- Navegação por abas fixas na parte inferior ----
@@ -2343,6 +2359,7 @@
       criado_em: serverTimestamp()
     }).then(function(){
       addDescHistory(estado.categoria, estado.descricao);
+      try { localStorage.setItem('ultimoPagador', estado.pagador); } catch (e) {}
       window.resetForm();
     }).catch(function(err){
       // Com persistência offline habilitada, isto normalmente só falha
@@ -3015,10 +3032,13 @@
       btn.textContent = originalTxt;
     });
   });
+
+  // Ao abrir o app: campo de valor em edição, com o teclado numérico já aberto.
+  openKeypad('novo');
 </script>
 <script>
   // Sincronizar com CACHE_VERSION em service-worker.js a cada nova versão.
-  var APP_VERSION = "1.16.0";
+  var APP_VERSION = "1.17.0";
   document.title = 'Despesas de Casa · v' + APP_VERSION;
   document.getElementById('versionTag').textContent = 'v' + APP_VERSION;
 
