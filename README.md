@@ -4,7 +4,8 @@
 ```
 index.html              → o app (PWA completo)
 manifest.json           → metadados do PWA (nome, ícones, cor)
-service-worker.js       → cache offline (network-first)
+service-worker-despesas.js → cache offline (network-first), nome exclusivo do Despesas
+service-worker.js       → PROVISÓRIO de migração (apagar após os aparelhos atualizarem)
 icons/                  → ícones do app (192, 512, maskable)
 firebase/
   firestore.rules       → regras de segurança do banco
@@ -29,11 +30,12 @@ firebase/
 
 ## 2. Publicar no GitHub Pages
 
-Copie estes 4 itens pra raiz do seu repositório (do jeito que já faz com o PSC PRO / Free):
+Copie estes itens pra raiz do seu repositório (do jeito que já faz com o PSC PRO / Free):
 ```
 index.html
 manifest.json
-service-worker.js
+service-worker-despesas.js
+service-worker.js   (provisório de migração — apagar depois que os aparelhos atualizarem)
 icons/
 ```
 Commit, push, e confirme que o GitHub Pages está servindo a branch/pasta certa.
@@ -48,7 +50,7 @@ Commit, push, e confirme que o GitHub Pages está servindo a branch/pasta certa.
 
 Sempre que subir uma nova versão, sincronize os **dois** pontos (mesmo padrão dos outros apps):
 - `APP_VERSION` no `<script>` no final do `index.html`
-- `CACHE_VERSION` no topo do `service-worker.js`
+- `CACHE_VERSION` no topo do `service-worker-despesas.js`
 
 Esquecer de sincronizar os dois é a causa mais comum de tela presa em versão antiga depois do deploy.
 

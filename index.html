@@ -1956,6 +1956,55 @@
   } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
   import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 
+  // ============================================================
+  // ACESSO RESTRITO — só aparelhos registrados abrem o app.
+  // Segurança mínima e local: enquanto o aparelho não for registrado com o código,
+  // nada abaixo é executado (sem login anônimo e sem leitura de dados).
+  // O código não fica no arquivo, só o seu hash SHA-256. Para trocar o código
+  // (e invalidar todos os aparelhos já registrados), troque ACESSO_HASH.
+  // ============================================================
+  var ACESSO_HASH = "39a430095d98eb2b19b4027b3b5449fc1ccdbd9db6805f7f206de8a897e02c6d";
+
+  async function hashAcesso(texto){
+    var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(texto));
+    return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2, '0'); }).join('');
+  }
+
+  var aparelhoRegistrado = false;
+  try { aparelhoRegistrado = localStorage.getItem('aparelhoRegistrado') === ACESSO_HASH; } catch (e) {}
+
+  if (!aparelhoRegistrado) {
+    await new Promise(function(liberar){
+      var tela = document.createElement('div');
+      tela.style.cssText = 'position:fixed;inset:0;z-index:99999;background:var(--bg,#EFEDE6);display:flex;align-items:center;justify-content:center;padding:24px;font-family:inherit;color:var(--ink,#222)';
+      tela.innerHTML =
+        '<div style="width:100%;max-width:340px;text-align:center">' +
+          '<div style="font-size:18px;font-weight:700;margin-bottom:6px">Acesso restrito</div>' +
+          '<div style="font-size:13px;color:var(--ink-soft,#777);margin-bottom:18px">Digite o código para registrar este aparelho.</div>' +
+          '<input id="acessoCodigo" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Código" ' +
+            'style="width:100%;box-sizing:border-box;padding:12px;border-radius:12px;border:1.5px solid var(--border,#ccc);background:var(--surface,#fff);color:var(--ink,#222);font-size:16px;text-align:center;font-family:inherit">' +
+          '<div id="acessoErro" style="min-height:18px;font-size:12.5px;color:#c0392b;margin:8px 0"></div>' +
+          '<button id="acessoEntrar" type="button" style="width:100%;padding:12px;border:none;border-radius:12px;background:var(--ink,#222);color:var(--bg,#fff);font-size:15px;font-weight:700;font-family:inherit">Entrar</button>' +
+        '</div>';
+      document.body.appendChild(tela);
+      var campo = tela.querySelector('#acessoCodigo');
+      var erro = tela.querySelector('#acessoErro');
+      async function tentar(){
+        var h = await hashAcesso(campo.value.trim());
+        if (h === ACESSO_HASH) {
+          try { localStorage.setItem('aparelhoRegistrado', ACESSO_HASH); } catch (e) {}
+          tela.remove();
+          liberar();
+        } else {
+          erro.textContent = 'Código incorreto.';
+          campo.value = '';
+        }
+      }
+      tela.querySelector('#acessoEntrar').addEventListener('click', tentar);
+      campo.addEventListener('keydown', function(e){ if (e.key === 'Enter') tentar(); });
+    });
+  }
+
   var app = initializeApp(firebaseConfig);
   var db = getFirestore(app);
   var auth = getAuth(app);
@@ -3133,14 +3182,14 @@
   openKeypad('novo');
 </script>
 <script>
-  // Sincronizar com CACHE_VERSION em service-worker.js a cada nova versão.
-  var APP_VERSION = "1.19.1";
+  // Sincronizar com CACHE_VERSION em service-worker-despesas.js a cada nova versão.
+  var APP_VERSION = "1.21.0";
   document.title = 'Despesas de Casa · v' + APP_VERSION;
   document.getElementById('versionTag').textContent = 'v' + APP_VERSION;
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function(){
-      navigator.serviceWorker.register('./service-worker.js');
+      navigator.serviceWorker.register('./service-worker-despesas.js');
     });
   }
 </script>
